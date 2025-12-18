@@ -1,0 +1,101 @@
+'use client';
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+export default function Hakkinda() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setDarkMode(isDark);
+      setMounted(true);
+    };
+    window.requestAnimationFrame(checkTheme);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const nextMode = !darkMode;
+    setDarkMode(nextMode);
+    if (nextMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  if (!mounted) return null;
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans">
+      
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-16 py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50 transition-all duration-500">
+        <Link href="/" className="flex items-center gap-2 group cursor-pointer transition-transform active:scale-95">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all">TK</div>
+          <span className="text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors">Tarih Deposu</span>
+        </Link>
+        <div className="flex items-center gap-8 text-sm font-medium">
+          <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold font-sans">Ana Sayfa</Link>
+          <Link href="/hakkinda" className="text-[#334EAC] font-bold font-sans">Hakkında</Link>
+          <Link href="#" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold font-sans">Depo</Link>
+          <button onClick={toggleDarkMode} className="ml-2 p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white transition-all shadow-md active:scale-90 hover:scale-110">{darkMode ? "☀️" : "🌙"}</button>
+        </div>
+      </nav>
+
+      <main className="max-w-5xl mx-auto px-8 py-20 font-sans">
+        <section className="text-center mb-20">
+          <span className="text-[#334EAC] font-bold text-sm tracking-[0.3em] uppercase mb-4 block italic font-bold">Manifestomuz</span>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-8 leading-tight font-sans">Geçmişi <span className="text-[#334EAC]">Yeniden</span> Keşfet</h1>
+          <div className="h-1.5 w-32 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mx-auto"></div>
+        </section>
+
+        <div className="space-y-20">
+          <div className="relative p-10 md:p-14 rounded-2xl bg-gray-50 dark:bg-[#1e293b]/50 border border-gray-100 dark:border-white/5 shadow-2xl">
+            <h2 className="text-3xl font-black mb-8 text-[#334EAC] font-bold font-sans">Hikayemiz</h2>
+            <div className="max-w-2xl font-sans text-black dark:text-white">
+                <p className="text-xl text-gray-700 dark:text-gray-200 leading-relaxed italic mb-8 border-l-4 border-[#334EAC] pl-6 font-medium">
+                &quot;Tarih Deposu, geçmişin tozlu raflarında unutulmaya yüz tutmuş bilgileri, modern dünyanın hızına ve estetiğine uyarlamak amacıyla kurulmuş bir dijital kütüphane girişimidir.&quot;
+                </p>
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed font-bold">
+                Tarih sadece sayılardan ve savaşlardan ibaret değildir; o, insanlığın kolektif hafızasıdır. Biz, bu hafızayı sadece saklamakla kalmıyor, aynı zamanda herkes için erişilebilir hale getirmeyi hedefliyoruz.
+                </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center font-sans text-black dark:text-white">
+            {[
+                { label: "Olay Arşivi", value: "1200+" },
+                { label: "Aktif Okuyucu", value: "50K+" },
+                { label: "Doğrulanmış Kaynak", value: "100%" }
+            ].map((stat) => (
+                <div key={stat.label} className="p-8 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#0f172a] shadow-lg">
+                    <div className="text-4xl font-black text-[#334EAC] mb-2 font-bold">{stat.value}</div>
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest font-bold">{stat.label}</div>
+                </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans text-black dark:text-white">
+            <div className="p-10 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#1e293b]/30 shadow-xl hover:border-[#334EAC]/40 transition-all group">
+              <div className="w-12 h-12 bg-[#334EAC]/10 rounded-lg flex items-center justify-center text-2xl mb-6 font-bold">🎯</div>
+              <h3 className="text-2xl font-black mb-4 font-bold">Misyonumuz</h3>
+              <p className="text-gray-500 dark:text-gray-400 leading-relaxed font-medium">Tarihsel olayları en doğru kaynaklardan süzerek, karmaşıklıktan uzak, sade ve çarpıcı bir dil ile sunmak.</p>
+            </div>
+            <div className="p-10 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#1e293b]/30 shadow-xl hover:border-[#334EAC]/40 transition-all group">
+              <div className="w-12 h-12 bg-[#334EAC]/10 rounded-lg flex items-center justify-center text-2xl mb-6 font-bold">🚀</div>
+              <h3 className="text-2xl font-black mb-4 font-bold">Vizyonumuz</h3>
+              <p className="text-gray-500 dark:text-gray-400 leading-relaxed font-medium">Dünyanın en kapsamlı ve kullanıcı dostu dijital tarih arşivine dönüşerek, tarih meraklılarının ilk durağı olmak.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer className="py-12 text-center border-t border-gray-200 dark:border-white/5 font-sans">
+        <p className="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] italic">© 2024 Tarih Deposu — Bilgi paylaştıkça çoğalır.</p>
+      </footer>
+    </div>
+  );
+}
