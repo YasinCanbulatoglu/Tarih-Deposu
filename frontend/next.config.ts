@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: '**', // Dünyadaki tüm sitelerden resim çekmene izin verir
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },

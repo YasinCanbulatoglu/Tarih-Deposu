@@ -9,7 +9,6 @@ export default function Depo() {
   const [mounted, setMounted] = useState(false);
   
   // Takvim Durumları - Varsayılan olarak İstanbul'un Fethi (29 Mayıs 1453)
-  // Not: JS'de aylar 0'dan başlar (Mayıs = 4)
   const [currentDate, setCurrentDate] = useState(new Date(1453, 4, 29)); 
   const [selectedDay, setSelectedDay] = useState(29);
 
@@ -31,12 +30,12 @@ export default function Depo() {
   const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
   const daysShort = ["Pz", "Pt", "Sa", "Çar", "Per", "Cum", "Cmt"];
 
-  // Örnek Olay Verileri
+  // Örnek Olay Verileri - Sluglar Eklendi
   const allEvents = [
-    { id: 1, day: 29, month: 4, year: 1453, title: "İstanbul'un Fethi", date: "29 Mayıs 1453", era: "Yeni Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=400" },
-    { id: 2, day: 14, month: 6, year: 1789, title: "Fransız İhtilali", date: "14 Temmuz 1789", era: "Yakın Çağ", category: "Devrim", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
-    { id: 3, day: 20, month: 6, year: 1969, title: "Ay'a Ayak Basış", date: "20 Temmuz 1969", era: "Modern Tarih", category: "Bilim", img: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=400" },
-    { id: 4, day: 26, month: 7, year: 1071, title: "Malazgirt Zaferi", date: "26 Ağustos 1071", era: "Orta Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
+    { id: 1, day: 29, month: 4, year: 1453, slug: "istanbulun-fethi", title: "İstanbul'un Fethi", date: "29 Mayıs 1453", era: "Yeni Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=400" },
+    { id: 2, day: 14, month: 6, year: 1789, slug: "fransiz-ihtilali", title: "Fransız İhtilali", date: "14 Temmuz 1789", era: "Yakın Çağ", category: "Devrim", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
+    { id: 3, day: 20, month: 6, year: 1969, slug: "aya-ilk-adim", title: "Ay'a Ayak Basış", date: "20 Temmuz 1969", era: "Modern Tarih", category: "Bilim", img: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=400" },
+    { id: 4, day: 26, month: 7, year: 1071, slug: "malazgirt-savasi", title: "Malazgirt Zaferi", date: "26 Ağustos 1071", era: "Orta Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
   ];
 
   if (!mounted) return null;
@@ -58,7 +57,6 @@ export default function Depo() {
     const newDate = new Date(currentDate);
     newDate.setMonth(currentDate.getMonth() + offset);
     setCurrentDate(newDate);
-    // Ay değiştiğinde eğer o gün o ayda yoksa (örn 31 Ocak -> 28 Şubat), son güne çek
     const daysInNewMonth = getDaysInMonth(newDate.getFullYear(), newDate.getMonth());
     if (selectedDay > daysInNewMonth) {
       setSelectedDay(daysInNewMonth);
@@ -72,11 +70,9 @@ export default function Depo() {
   for (let i = 0; i < firstDay; i++) calendarGrid.push(null); 
   for (let i = 1; i <= daysInMonth; i++) calendarGrid.push(i);
 
-  // M.Ö. / M.S. Yazısı
   const displayYear = currentDate.getFullYear();
   const eraText = displayYear < 0 ? `M.Ö. ${Math.abs(displayYear)}` : `M.S. ${displayYear}`;
 
-  // Filtreleme
   const filteredEvents = allEvents.filter(e => 
     e.day === selectedDay && 
     e.month === currentDate.getMonth() && 
@@ -119,7 +115,6 @@ export default function Depo() {
             <div className="p-6 rounded-3xl bg-[#334EAC]/5 dark:bg-[#1e293b] border border-[#334EAC]/10 shadow-2xl">
               
               <div className="flex items-center justify-between mb-8">
-                {/* AY AZALTMA BUTONU */}
                 <button 
                   onClick={() => handleMonthChange(-1)} 
                   className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none"
@@ -140,7 +135,6 @@ export default function Depo() {
                   <div className="h-0.5 w-8 group-hover:w-full bg-[#334EAC]/30 mx-auto transition-all duration-300"></div>
                 </div>
 
-                {/* AY ARTIRMA BUTONU */}
                 <button 
                   onClick={() => handleMonthChange(1)} 
                   className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none"
@@ -196,22 +190,25 @@ export default function Depo() {
             <div className="space-y-6">
               {filteredEvents.length > 0 ? (
                 filteredEvents.map((event) => (
-                  <div key={event.id} className="group flex flex-col md:flex-row gap-6 p-6 rounded-3xl bg-white dark:bg-[#1e293b]/30 border border-gray-100 dark:border-white/5 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:border-[#334EAC]/30 hover:-translate-y-1">
-                    <div className="relative h-40 w-full md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-lg">
-                      <Image src={event.img} alt={event.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-                    </div>
-                    <div className="flex flex-col justify-center flex-1">
-                      <div className="flex items-center gap-3 mb-3 text-[10px] font-black uppercase text-[#334EAC] tracking-widest">
-                        <span className="bg-[#334EAC]/10 px-3 py-1 rounded-full">{event.era}</span>
-                        <span className="text-gray-400 italic font-bold">{event.category}</span>
+                  // BURASI DEĞİŞTİ: Kartın tamamı artık Link ile sarmalandı
+                  <Link href={`/olay/${event.slug}`} key={event.id} className="block">
+                    <div className="group flex flex-col md:flex-row gap-6 p-6 rounded-3xl bg-white dark:bg-[#1e293b]/30 border border-gray-100 dark:border-white/5 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:border-[#334EAC]/30 hover:-translate-y-1">
+                      <div className="relative h-40 w-full md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-lg">
+                        <Image src={event.img} alt={event.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                       </div>
-                      <h3 className="text-2xl font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight">{event.title}</h3>
-                      <div className="flex items-center justify-between mt-4">
-                          <span className="text-xs font-bold text-gray-400 italic font-medium">📅 {event.date}</span>
-                          <span className="text-[10px] font-black text-[#334EAC] uppercase tracking-[0.2em] group-hover:translate-x-2 transition-transform">İncele →</span>
+                      <div className="flex flex-col justify-center flex-1">
+                        <div className="flex items-center gap-3 mb-3 text-[10px] font-black uppercase text-[#334EAC] tracking-widest">
+                          <span className="bg-[#334EAC]/10 px-3 py-1 rounded-full">{event.era}</span>
+                          <span className="text-gray-400 italic font-bold">{event.category}</span>
+                        </div>
+                        <h3 className="text-2xl font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight">{event.title}</h3>
+                        <div className="flex items-center justify-between mt-4">
+                            <span className="text-xs font-bold text-gray-400 italic font-medium">📅 {event.date}</span>
+                            <span className="text-[10px] font-black text-[#334EAC] uppercase tracking-[0.2em] group-hover:translate-x-2 transition-transform">İncele →</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="p-20 text-center rounded-3xl border-2 border-dashed border-gray-100 dark:border-white/5 animate-in fade-in zoom-in duration-500">
