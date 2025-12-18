@@ -5,7 +5,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Manuel dark mod geçişi için gerekli varyant */
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
@@ -13,9 +12,24 @@
   --foreground: #171717;
 }
 
-/* Sistem ayarlarını devre dışı bırakıyoruz ki butonumuz çalışsın */
 body {
   background-color: white;
   color: black;
   font-family: var(--font-geist-sans);
+}
+
+/* KAYAN BANT (MARQUEE) ANIMASYONU */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite; /* Kartlar olduğu için biraz daha yavaşlattım */
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
