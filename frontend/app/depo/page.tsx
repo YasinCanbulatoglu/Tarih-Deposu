@@ -4,14 +4,34 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+// Veritabanı veri tipi
+interface HistoricalEvent {
+  id: number;
+  title: string;
+  slug: string;
+  short_description: string;
+  date_day: number;
+  date_month: number;
+  date_year: number;
+  era: string;
+  category: string;
+  cover_image: string;
+}
+
 export default function Depo() {
   const [darkMode, setDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   
-  // Takvim Durumları - Varsayılan olarak İstanbul'un Fethi (29 Mayıs 1453)
-  const [currentDate, setCurrentDate] = useState(new Date(1453, 4, 29)); 
-  const [selectedDay, setSelectedDay] = useState(29);
+  // VERİTABANI DURUMU
+  const [allEvents, setAllEvents] = useState<HistoricalEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // ARAMA ÖZELLİĞİ
 
+  // Takvim Durumları - Başlangıçta selectedDay null olursa "Hepsini Göster" demek olur
+  const [currentDate, setCurrentDate] = useState(new Date(1453, 4, 29)); 
+  const [selectedDay, setSelectedDay] = useState<number | null>(null); // NULL = Filtre Yok
+
+  // 1. Sayfa Yüklendiğinde
   useEffect(() => {
     const initPage = () => {
       const isDark = document.documentElement.classList.contains('dark');
@@ -19,6 +39,18 @@ export default function Depo() {
       setMounted(true);
     };
     window.requestAnimationFrame(initPage);
+    
+    // VERİTABANINDAN VERİ ÇEK
+    fetch('http://localhost:5000/api/events')
+      .then(res => res.json())
+      .then(data => {
+        setAllEvents(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Veri çekme hatası:", err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -29,14 +61,6 @@ export default function Depo() {
 
   const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
   const daysShort = ["Pz", "Pt", "Sa", "Çar", "Per", "Cum", "Cmt"];
-
-  // Örnek Olay Verileri - Sluglar Eklendi
-  const allEvents = [
-    { id: 1, day: 29, month: 4, year: 1453, slug: "istanbulun-fethi", title: "İstanbul'un Fethi", date: "29 Mayıs 1453", era: "Yeni Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=400" },
-    { id: 2, day: 14, month: 6, year: 1789, slug: "fransiz-ihtilali", title: "Fransız İhtilali", date: "14 Temmuz 1789", era: "Yakın Çağ", category: "Devrim", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
-    { id: 3, day: 20, month: 6, year: 1969, slug: "aya-ilk-adim", title: "Ay'a Ayak Basış", date: "20 Temmuz 1969", era: "Modern Tarih", category: "Bilim", img: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=400" },
-    { id: 4, day: 26, month: 7, year: 1071, slug: "malazgirt-savasi", title: "Malazgirt Zaferi", date: "26 Ağustos 1071", era: "Orta Çağ", category: "Savaş", img: "https://images.unsplash.com/photo-1585129777188-94600bc7b4b3?q=80&w=400" },
-  ];
 
   if (!mounted) return null;
 
@@ -58,7 +82,7 @@ export default function Depo() {
     newDate.setMonth(currentDate.getMonth() + offset);
     setCurrentDate(newDate);
     const daysInNewMonth = getDaysInMonth(newDate.getFullYear(), newDate.getMonth());
-    if (selectedDay > daysInNewMonth) {
+    if (selectedDay && selectedDay > daysInNewMonth) {
       setSelectedDay(daysInNewMonth);
     }
   };
@@ -73,11 +97,21 @@ export default function Depo() {
   const displayYear = currentDate.getFullYear();
   const eraText = displayYear < 0 ? `M.Ö. ${Math.abs(displayYear)}` : `M.S. ${displayYear}`;
 
-  const filteredEvents = allEvents.filter(e => 
-    e.day === selectedDay && 
-    e.month === currentDate.getMonth() && 
-    e.year === currentDate.getFullYear()
-  );
+  // *** GELİŞMİŞ FİLTRELEME MANTIĞI ***
+  const filteredEvents = allEvents.filter(e => {
+    // 1. Arama Çubuğu Filtresi
+    const matchesSearch = e.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          e.short_description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // 2. Takvim Filtresi (Eğer gün seçiliyse o güne bak, değilse hepsini geçebilirsin)
+    const matchesCalendar = selectedDay 
+      ? (Number(e.date_day) === selectedDay && 
+         Number(e.date_month) === currentDate.getMonth() && 
+         Number(e.date_year) === currentDate.getFullYear())
+      : true;
+
+    return matchesSearch && matchesCalendar;
+  });
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans scroll-smooth">
@@ -93,12 +127,24 @@ export default function Depo() {
         }
       `}</style>
 
-      {/* Navbar */}
+      {/* Navbar - ARAMA ÇUBUĞU EKLENDİ */}
       <nav className="flex items-center justify-between px-16 py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform">
           <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">TK</div>
           <span className="text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors font-sans">Tarih Deposu</span>
         </Link>
+
+        {/* YENİ ARAMA ÇUBUĞU */}
+        <div className="hidden md:block flex-1 max-w-sm mx-8">
+           <input 
+             type="text" 
+             placeholder="Arşivde ara..." 
+             value={searchTerm}
+             onChange={(e) => setSearchTerm(e.target.value)}
+             className="w-full px-5 py-2 rounded-full bg-gray-100 dark:bg-[#0f172a] border border-transparent focus:border-[#334EAC] outline-none text-sm transition-all"
+           />
+        </div>
+
         <div className="flex items-center gap-8 text-sm font-medium">
           <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] font-bold">Ana Sayfa</Link>
           <Link href="/hakkinda" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] font-bold">Hakkında</Link>
@@ -115,43 +161,28 @@ export default function Depo() {
             <div className="p-6 rounded-3xl bg-[#334EAC]/5 dark:bg-[#1e293b] border border-[#334EAC]/10 shadow-2xl">
               
               <div className="flex items-center justify-between mb-8">
-                <button 
-                  onClick={() => handleMonthChange(-1)} 
-                  className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none"
-                >
-                  {"<"}
-                </button>
-                
+                <button onClick={() => handleMonthChange(-1)} className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none">{"<"}</button>
                 <div className="text-center group">
-                  <div className="text-[10px] font-black text-[#334EAC] uppercase tracking-[0.2em] mb-1">
-                    {months[currentDate.getMonth()]}
-                  </div>
-                  <input 
-                    type="number" 
-                    value={currentDate.getFullYear()} 
-                    onChange={changeYear}
-                    className="bg-transparent text-center font-black text-2xl w-24 outline-none focus:text-[#334EAC] transition-all cursor-text"
-                  />
+                  <div className="text-[10px] font-black text-[#334EAC] uppercase tracking-[0.2em] mb-1">{months[currentDate.getMonth()]}</div>
+                  <input type="number" value={currentDate.getFullYear()} onChange={changeYear} className="bg-transparent text-center font-black text-2xl w-24 outline-none focus:text-[#334EAC] transition-all cursor-text" />
                   <div className="h-0.5 w-8 group-hover:w-full bg-[#334EAC]/30 mx-auto transition-all duration-300"></div>
                 </div>
-
-                <button 
-                  onClick={() => handleMonthChange(1)} 
-                  className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none"
-                >
-                  {">"}
-                </button>
+                <button onClick={() => handleMonthChange(1)} className="p-2 hover:bg-[#334EAC]/20 rounded-xl transition-all font-black text-[#334EAC] text-lg select-none">{">"}</button>
               </div>
 
               <div className="grid grid-cols-7 gap-1 text-center">
                 {daysShort.map(d => <div key={d} className="text-[10px] font-black text-gray-400 uppercase mb-3">{d}</div>)}
                 {calendarGrid.map((day, idx) => {
-                  const isEventDay = day && allEvents.some(e => e.day === day && e.month === currentDate.getMonth() && e.year === currentDate.getFullYear());
+                  const isEventDay = day && allEvents.some(e => 
+                    Number(e.date_day) === day && 
+                    Number(e.date_month) === currentDate.getMonth() && 
+                    Number(e.date_year) === currentDate.getFullYear()
+                  );
                   
                   return (
                     <button
                       key={idx}
-                      onClick={() => day && setSelectedDay(day)}
+                      onClick={() => day && setSelectedDay(selectedDay === day ? null : day)}
                       className={`relative h-11 w-full rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center
                         ${!day ? 'invisible' : 'hover:bg-[#334EAC]/10 hover:text-[#334EAC]'}
                         ${day === selectedDay ? 'bg-[#334EAC] text-white shadow-lg shadow-[#334EAC]/30 scale-105 font-black' : 'text-gray-600 dark:text-gray-300'}
@@ -166,44 +197,49 @@ export default function Depo() {
                 })}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/5 text-center">
-                <div className="text-[10px] text-[#334EAC] font-black uppercase tracking-widest mb-1 italic">Zaman Dilimi</div>
-                <span className="text-[11px] text-gray-500 dark:text-gray-400 font-bold tracking-tight">
-                  {eraText} dönemini inceliyorsun
-                </span>
-              </div>
+              {/* FİLTRE TEMİZLEME BUTONU */}
+              {selectedDay && (
+                <button 
+                  onClick={() => setSelectedDay(null)}
+                  className="w-full mt-6 py-2 bg-red-500/10 text-red-500 text-[10px] font-black rounded-lg hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest"
+                >
+                  Tarih Filtresini Kaldır
+                </button>
+              )}
             </div>
           </aside>
 
           {/* SAĞ: OLAY LİSTESİ */}
           <section className="flex-1 min-w-0">
              <div className="mb-12">
-                <h1 className="text-5xl font-black tracking-tighter mb-4 italic uppercase">TARİH <span className="text-[#334EAC]">ARŞİVİ</span></h1>
-                <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 bg-[#334EAC] rounded-full animate-pulse"></div>
-                    <p className="text-gray-500 dark:text-gray-400 font-bold italic uppercase tracking-widest text-xs">
-                        {selectedDay} {months[currentDate.getMonth()]} {eraText} Kayıtları
-                    </p>
-                </div>
+                <h1 className="text-5xl font-black tracking-tighter mb-4 italic uppercase text-black dark:text-white">TARİH <span className="text-[#334EAC]">ARŞİVİ</span></h1>
+                <p className="text-gray-500 dark:text-gray-400 font-bold italic uppercase tracking-widest text-xs">
+                  {selectedDay ? `${selectedDay} ${months[currentDate.getMonth()]} ${eraText} Kayıtları` : "Tüm Arşiv Kayıtları"}
+                </p>
              </div>
 
             <div className="space-y-6">
-              {filteredEvents.length > 0 ? (
+              {loading ? (
+                <div className="p-10 text-center font-black animate-pulse uppercase">ARŞİV ODASI TARANIYOR...</div>
+              ) : filteredEvents.length > 0 ? (
                 filteredEvents.map((event) => (
-                  // BURASI DEĞİŞTİ: Kartın tamamı artık Link ile sarmalandı
                   <Link href={`/olay/${event.slug}`} key={event.id} className="block">
                     <div className="group flex flex-col md:flex-row gap-6 p-6 rounded-3xl bg-white dark:bg-[#1e293b]/30 border border-gray-100 dark:border-white/5 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:border-[#334EAC]/30 hover:-translate-y-1">
                       <div className="relative h-40 w-full md:w-64 shrink-0 overflow-hidden rounded-2xl shadow-lg">
-                        <Image src={event.img} alt={event.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <Image 
+                          src={event.cover_image || "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=400"} 
+                          alt={event.title} fill className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                        />
                       </div>
                       <div className="flex flex-col justify-center flex-1">
                         <div className="flex items-center gap-3 mb-3 text-[10px] font-black uppercase text-[#334EAC] tracking-widest">
                           <span className="bg-[#334EAC]/10 px-3 py-1 rounded-full">{event.era}</span>
                           <span className="text-gray-400 italic font-bold">{event.category}</span>
                         </div>
-                        <h3 className="text-2xl font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight">{event.title}</h3>
-                        <div className="flex items-center justify-between mt-4">
-                            <span className="text-xs font-bold text-gray-400 italic font-medium">📅 {event.date}</span>
+                        <h3 className="text-2xl font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight text-black dark:text-white">{event.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 font-medium">{event.short_description}</p>
+                        <div className="flex items-center justify-between mt-auto">
+                            <span className="text-xs font-bold text-gray-400 italic font-medium">📅 {event.date_day} {months[event.date_month]} {event.date_year}</span>
                             <span className="text-[10px] font-black text-[#334EAC] uppercase tracking-[0.2em] group-hover:translate-x-2 transition-transform">İncele →</span>
                         </div>
                       </div>
@@ -211,9 +247,9 @@ export default function Depo() {
                   </Link>
                 ))
               ) : (
-                <div className="p-20 text-center rounded-3xl border-2 border-dashed border-gray-100 dark:border-white/5 animate-in fade-in zoom-in duration-500">
+                <div className="p-20 text-center rounded-3xl border-2 border-dashed border-gray-100 dark:border-white/5">
                   <span className="text-4xl mb-4 block opacity-50">⌛</span>
-                  <p className="text-gray-400 font-bold italic">Bu tarihte ({selectedDay} {months[currentDate.getMonth()]}) henüz bir olay kaydı bulunamadı.</p>
+                  <p className="text-gray-400 font-bold italic">Aranılan kriterlerde bir olay kaydı bulunamadı.</p>
                 </div>
               )}
             </div>

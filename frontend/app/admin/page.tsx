@@ -104,7 +104,7 @@ export default function AdminPage() {
                   <option>İlk Çağ</option>
                   <option>Orta Çağ</option>
                   <option>Yeni Çağ</option>
-                  <option selected>Yakın Çağ</option>
+                  <option >Yakın Çağ</option>
                 </select>
               </div>
             </div>
