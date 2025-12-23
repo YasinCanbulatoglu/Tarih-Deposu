@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link"; 
+import Link from "next/link";
 
-// 1. Veri yapısını (Interface) tanımlıyoruz - Bu sayede 'any' hatası almazsın
+// 1. Veri yapısını (Interface) tanımlıyoruz
 interface HistoricalEvent {
   id: number;
   title: string;
@@ -12,7 +12,7 @@ interface HistoricalEvent {
   short_description: string;
   details: string;
   date_day: number;
-  date_month: number;
+  date_month: string;
   date_year: number;
   era: string;
   category: string;
@@ -22,7 +22,7 @@ interface HistoricalEvent {
 // 2. Tasarımdaki kart yapısı için yardımcı tip
 interface StoryCard {
   title: string;
-  slug: string; // BU ÇOK ÖNEMLİ: Linklerin çalışması için veritabanındaki slug buraya gelmeli
+  slug: string;
   category: string;
   excerpt: string;
   date: string;
@@ -31,100 +31,146 @@ interface StoryCard {
 }
 
 export default function Home() {
-  const [darkMode, setDarkMode] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState("En Yeni");
-  
-  // Listeyi StoryCard tipinde tanımladık
   const [recentStories, setRecentStories] = useState<StoryCard[]>([]);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  // Backend'den verileri çekiyoruz
-  useEffect(() => {
-    fetch('http://localhost:5000/api/events')
-      .then(res => res.json())
+    fetch("http://localhost:5000/api/events")
+      .then((res) => res.json())
       .then((data: HistoricalEvent[]) => {
-        // Gelen veriyi tasarımındaki alanlara (StoryCard yapısına) dönüştürüyoruz
         const formattedData: StoryCard[] = data.map((event: HistoricalEvent) => ({
           title: event.title,
-          slug: event.slug, // Veritabanındaki slug değerini buraya aktarıyoruz
+          slug: event.slug,
           category: event.category || "Tarih",
           excerpt: event.short_description,
-          date: `${event.date_day}.${event.date_month + 1}.${event.date_year}`,
+          date: `${event.date_day} ${event.date_month} ${event.date_year}`,
           readTime: "5 dk",
-          imageUrl: event.cover_image || "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800"
+          // HATA ÇÖZÜMÜ: Eğer resim linki 'http' ile başlamıyorsa (örn: 'resim.jpg' ise) varsayılan resmi koy.
+          imageUrl:
+            event.cover_image && event.cover_image.startsWith("http")
+              ? event.cover_image
+              : "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800",
         }));
         setRecentStories(formattedData);
       })
-      .catch(err => console.error("Veri çekme hatası:", err));
+      .catch((err) => console.error("Veri çekme hatası:", err));
   }, []);
 
   const popularEvents = [
-    { title: "İstanbul'un Fethi", date: "1453", slug: "istanbulun-fethi", desc: "Doğu Roma'nın sonu, yeni bir çağın başlangıcı." },
-    { title: "Fransız İhtilali", date: "1789", slug: "fransiz-ihtilali", desc: "Mutlak monarşinin devrildiği modern dönüm noktası." },
-    { title: "Ay'a İlk Adım", date: "1969", slug: "aya-ilk-adim", desc: "İnsanlığın dünya dışındaki en büyük başarısı." },
-    { title: "Cumhuriyetin İlanı", date: "1923", slug: "cumhuriyetin-ilani", desc: "Modern Türkiye Cumhuriyeti'nin kuruluşu." },
-    { title: "Rönesans", date: "14. Yüzyıl", slug: "ronesans", desc: "Sanat ve bilimde yeniden doğuşun simgesi." },
-    { title: "Sanayi Devrimi", date: "1760", slug: "sanayi-devrimi", desc: "Üretim ve teknolojinin dünyayı değiştirdiği an." },
-    { title: "Malazgirt Savaşı", date: "1071", slug: "malazgirt-savasi", desc: "Anadolu'nun kapılarının Türklere açıldığı zafer." },
-    { title: "Magna Carta", date: "1215", slug: "magna-carta", desc: "Hukukun üstünlüğüne giden yolun ilk adımı." }
+    {
+      title: "İstanbul'un Fethi",
+      date: "1453",
+      slug: "istanbulun-fethi",
+      desc: "Doğu Roma'nın sonu, yeni bir çağın başlangıcı.",
+    },
+    {
+      title: "Fransız İhtilali",
+      date: "1789",
+      slug: "fransiz-ihtilali",
+      desc: "Mutlak monarşinin devrildiği modern dönüm noktası.",
+    },
+    {
+      title: "Ay'a İlk Adım",
+      date: "1969",
+      slug: "aya-ilk-adim",
+      desc: "İnsanlığın dünya dışındaki en büyük başarısı.",
+    },
+    {
+      title: "Cumhuriyetin İlanı",
+      date: "1923",
+      slug: "cumhuriyetin-ilani",
+      desc: "Modern Türkiye Cumhuriyeti'nin kuruluşu.",
+    },
+    {
+      title: "Rönesans",
+      date: "14. Yüzyıl",
+      slug: "ronesans",
+      desc: "Sanat ve bilimde yeniden doğuşun simgesi.",
+    },
+    {
+      title: "Sanayi Devrimi",
+      date: "1760",
+      slug: "sanayi-devrimi",
+      desc: "Üretim ve teknolojinin dünyayı değiştirdiği an.",
+    },
+    {
+      title: "Malazgirt Savaşı",
+      date: "1071",
+      slug: "malazgirt-savasi",
+      desc: "Anadolu'nun kapılarının Türklere açıldığı zafer.",
+    },
+    {
+      title: "Magna Carta",
+      date: "1215",
+      slug: "magna-carta",
+      desc: "Hukukun üstünlüğüne giden yolun ilk adımı.",
+    },
   ];
 
   const historicalEras = [
-    { title: "İlk Çağ", description: "Yazının icadından Roma'nın çöküşüne; antik siteler ve ilk kanunlar.", tag: "M.Ö. 3200 - M.S. 476" },
-    { title: "Orta Çağ", description: "Feodalizm, şövalyeler ve büyük imparatorlukların yükseliş dönemi.", tag: "476 - 1453" },
-    { title: "Yeni Çağ", description: "Coğrafi keşifler, Rönesans ve matbaanın dünyayı değiştiren etkisi.", tag: "1453 - 1789" },
-    { title: "Yakın Çağ", description: "Fransız İhtilali'nden günümüze; endüstri, teknolojic ve uzay yarışı.", tag: "1789 - Günümüz" }
+    {
+      title: "İlk Çağ",
+      description:
+        "Yazının icadından Roma'nın çöküşüne; antik siteler ve ilk kanunlar.",
+      tag: "M.Ö. 3200 - M.S. 476",
+    },
+    {
+      title: "Orta Çağ",
+      description:
+        "Feodalizm, şövalyeler ve büyük imparatorlukların yükseliş dönemi.",
+      tag: "476 - 1453",
+    },
+    {
+      title: "Yeni Çağ",
+      description:
+        "Coğrafi keşifler, Rönesans ve matbaanın dünyayı değiştiren etkisi.",
+      tag: "1453 - 1789",
+    },
+    {
+      title: "Yakın Çağ",
+      description:
+        "Fransız İhtilali'nden günümüze; endüstri, teknolojic ve uzay yarışı.",
+      tag: "1789 - Günümüz",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans scroll-smooth">
-      
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-16 py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50 transition-all duration-500">
-        <Link href="/" className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">TK</div>
-          <span className="text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors font-sans">Tarih Deposu</span>
-        </Link>
-        <div className="flex-1 max-w-md mx-4">
-          <input type="text" placeholder="Tarihte ara..." className="w-full px-4 py-2 bg-gray-100 dark:bg-[#0f172a] border border-transparent rounded-lg focus:outline-none focus:border-[#334EAC] text-sm transition-all font-bold" />
-        </div>
-        <div className="flex items-center gap-6 text-sm font-medium">
-          <Link href="/" className="text-[#334EAC] font-bold">Ana Sayfa</Link>
-          <Link href="/hakkinda" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold">Hakkında</Link>
-          <Link href="/depo" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold">Depo</Link>
-          <Link href="/admin" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold uppercase">Panel</Link>
-          <button onClick={() => setDarkMode(!darkMode)} className="ml-2 p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white transition-all shadow-md active:scale-90 hover:scale-110">{darkMode ? "☀️" : "🌙"}</button>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-8 py-8 pb-16 font-sans">
-        
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16 font-sans">
         {/* 1. Hero Section */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-1000 relative overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-[#1e293b] dark:to-[#0f172a] p-10 md:p-14 rounded-xl border border-gray-100 dark:border-white/5 shadow-xl">
-          <div className="absolute -top-24 -right-24 h-80 w-80 bg-[#334EAC]/10 rounded-full blur-[80px]"></div>
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-1000 relative overflow-hidden bg-gradient-to-br from-gray-50 to-white dark:from-[#1e293b] dark:to-[#0f172a] p-6 sm:p-8 md:p-10 lg:p-14 rounded-xl border border-gray-100 dark:border-white/5 shadow-xl">
+          <div className="absolute -top-24 -right-24 h-64 sm:h-80 w-64 sm:w-80 bg-[#334EAC]/10 rounded-full blur-[80px]" />
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6 text-[#334EAC]">
-              <span className="cursor-default px-4 py-1.5 rounded-full bg-[#334EAC]/10 text-xs font-bold uppercase tracking-widest border border-[#334EAC]/20 transition-all duration-300 hover:-translate-y-1 font-bold">Günün Tarihi Notu</span>
+            <div className="flex items-center gap-3 mb-4 sm:mb-6 text-[#334EAC]">
+              <span className="cursor-default px-3 sm:px-4 py-1.5 rounded-full bg-[#334EAC]/10 text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-[#334EAC]/20 transition-all duration-300 hover:-translate-y-1 font-bold">
+                Günün Tarihi Notu
+              </span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-8 leading-[1.1]">Tarih Deposu&apos;na <br /><span className="text-[#334EAC]">Hoş Geldiniz</span></h1>
-            <div className="relative mt-8">
-              <div className="absolute -left-6 top-0 bottom-0 w-1 bg-[#334EAC] rounded-full opacity-50"></div>
-              <blockquote className="pl-8 py-1">
-                <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 italic font-medium leading-relaxed">&quot;Gelecek, tarihine sahip çıkanlarındır. Kendi geçmişini bilmeyen, başkasının yazdığı tarihin figüranı olur.&quot;</p>
-                <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-[1px] w-10 bg-gray-300 dark:bg-zinc-700"></div>
-                    <cite className="text-xs font-bold text-[#334EAC] not-italic tracking-widest uppercase font-bold">Motive Edici Bir Başlangıç</cite>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter mb-6 sm:mb-8 leading-[1.1]">
+              Tarih Deposu&apos;na <br />
+              <span className="text-[#334EAC]">Hoş Geldiniz</span>
+            </h1>
+            <div className="relative mt-6 sm:mt-8">
+              <div className="absolute -left-4 sm:-left-6 top-0 bottom-0 w-1 bg-[#334EAC] rounded-full opacity-50" />
+              <blockquote className="pl-6 sm:pl-8 py-1">
+                <p className="text-base sm:text-xl md:text-2xl text-gray-700 dark:text-gray-200 italic font-medium leading-relaxed">
+                  &quot;Gelecek, tarihine sahip çıkanlarındır. Kendi geçmişini
+                  bilmeyen, başkasının yazdığı tarihin figüranı olur.&quot;
+                </p>
+                <div className="mt-6 sm:mt-8 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="h-[1px] w-8 sm:w-10 bg-gray-300 dark:bg-zinc-700" />
+                    <cite className="text-[10px] sm:text-xs font-bold text-[#334EAC] not-italic tracking-widest uppercase font-bold">
+                      Motive Edici Bir Başlangıç
+                    </cite>
                   </div>
-                  <Link href="/depo" className="px-8 py-3 rounded-xl bg-[#334EAC] text-white font-bold hover:bg-[#283d87] transition-all shadow-lg shadow-[#334EAC]/20 active:scale-95 text-sm text-nowrap hover:-translate-y-1 font-bold">Arşivi Keşfet</Link>
+                  <Link
+                    href="/depo"
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl bg-[#334EAC] text-white text-xs sm:text-sm font-bold hover:bg-[#283d87] transition-all shadow-lg shadow-[#334EAC]/20 active:scale-95 text-nowrap hover:-translate-y-1 font-bold"
+                  >
+                    Arşivi Keşfet
+                  </Link>
                 </div>
               </blockquote>
             </div>
@@ -132,24 +178,39 @@ export default function Home() {
         </section>
 
         {/* 2. Popüler Olaylar Bandı */}
-        <div id="populer-olaylar" className="mt-10 px-6 py-8 bg-[#334EAC]/5 dark:bg-[#334EAC]/10 border border-[#334EAC]/10 rounded-xl relative shadow-sm overflow-hidden text-black dark:text-white">
-          <div className="mb-4 px-4">
-            <h2 className="text-2xl font-black tracking-tight font-sans">Popüler Olaylar</h2>
-            <div className="h-1.5 w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2"></div>
+        <div
+          id="populer-olaylar"
+          className="mt-10 px-4 sm:px-6 py-6 sm:py-8 bg-[#334EAC]/5 dark:bg-[#334EAC]/10 border border-[#334EAC]/10 rounded-xl relative shadow-sm overflow-hidden text-black dark:text-white"
+        >
+          <div className="mb-4 px-1 sm:px-4">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight font-sans">
+              Popüler Olaylar
+            </h2>
+            <div className="h-1.5 w-20 sm:w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2" />
           </div>
-          <div className="relative overflow-visible py-10"> 
-            <div className="flex animate-marquee overflow-visible">
+          <div className="relative overflow-visible py-6 sm:py-10">
+            <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:animate-marquee overflow-visible">
               {[...popularEvents, ...popularEvents].map((event, index) => (
                 <Link key={index} href={`/olay/${event.slug}`}>
-                  <div className="mx-4 min-w-[320px] p-7 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group relative z-10 flex flex-col justify-between h-52">
+                  <div className="w-full md:min-w-[320px] mx-0 md:mx-4 mb-2 md:mb-0 p-5 sm:p-6 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group relative z-10 flex flex-col justify-between h-48 sm:h-52">
                     <div>
-                      <span className="inline-block px-3 py-1 rounded-md bg-[#334EAC]/10 text-[11px] font-black text-[#334EAC] uppercase tracking-[0.1em] mb-3 group-hover:bg-[#334EAC] group-hover:text-white transition-all font-bold">{event.date}</span>
-                      <h3 className="text-lg font-black group-hover:text-[#334EAC] transition-colors leading-tight mb-2 font-bold">{event.title}</h3>
-                      <p className="text-[12px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-medium">{event.desc}</p>
+                      <span className="inline-block px-3 py-1 rounded-md bg-[#334EAC]/10 text-[10px] sm:text-[11px] font-black text-[#334EAC] uppercase tracking-[0.1em] mb-2 sm:mb-3 group-hover:bg-[#334EAC] group-hover:text-white transition-all font-bold">
+                        {event.date}
+                      </span>
+                      <h3 className="text-base sm:text-lg font-black group-hover:text-[#334EAC] transition-colors leading-tight mb-2 font-bold">
+                        {event.title}
+                      </h3>
+                      <p className="text-[11px] sm:text-[12px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-medium">
+                        {event.desc}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between text-[#334EAC]">
-                      <span className="text-[10px] font-black tracking-wider italic">GÖRÜNTÜLE</span>
-                      <span className="text-lg font-bold transition-transform group-hover:translate-x-2">→</span>
+                    <div className="flex items-center justify-between text-[#334EAC] mt-3">
+                      <span className="text-[9px] sm:text-[10px] font-black tracking-wider italic">
+                        GÖRÜNTÜLE
+                      </span>
+                      <span className="text-lg font-bold transition-transform group-hover:translate-x-2">
+                        →
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -159,38 +220,69 @@ export default function Home() {
         </div>
 
         {/* 3. Tarihsel Dönemler */}
-        <div className="mt-12 mb-6 px-4">
-          <h2 className="text-2xl font-black tracking-tight font-sans">Tarihsel Dönemler</h2>
-          <div className="h-1.5 w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2"></div>
+        <div className="mt-12 mb-6 px-1 sm:px-4">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight font-sans">
+            Tarihsel Dönemler
+          </h2>
+          <div className="h-1.5 w-20 sm:w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {historicalEras.map((era, index) => (
-            <div key={index} className="p-6 rounded-xl bg-gray-50 dark:bg-[#1e293b]/50 border border-transparent dark:border-white/5 shadow-sm flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-[#334EAC]/40 group active:scale-95">
+            <div
+              key={index}
+              className="p-5 sm:p-6 rounded-xl bg-gray-50 dark:bg-[#1e293b]/50 border border-transparent dark:border-white/5 shadow-sm flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-[#334EAC]/40 group active:scale-95"
+            >
               <div>
-                <span className="text-[9px] font-bold text-[#334EAC] opacity-80 uppercase tracking-widest bg-[#334EAC]/5 px-2 py-1 rounded-md transition-colors group-hover:bg-[#334EAC] group-hover:text-white font-bold">{era.tag}</span>
-                <h3 className="text-lg font-black mt-4 mb-2 tracking-tight group-hover:text-[#334EAC] transition-colors font-bold font-sans">{era.title}</h3>
-                <p className="text-[12px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3 font-medium">{era.description}</p>
+                <span className="text-[9px] font-bold text-[#334EAC] opacity-80 uppercase tracking-widest bg-[#334EAC]/5 px-2 py-1 rounded-md transition-colors group-hover:bg-[#334EAC] group-hover:text-white font-bold">
+                  {era.tag}
+                </span>
+                <h3 className="text-lg font-black mt-4 mb-2 tracking-tight group-hover:text-[#334EAC] transition-colors font-bold font-sans">
+                  {era.title}
+                </h3>
+                <p className="text-[12px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3 font-medium">
+                  {era.description}
+                </p>
               </div>
-              <button className="mt-6 text-[12px] font-bold text-[#334EAC] flex items-center gap-2 transition-all group-hover:gap-4 font-bold">Keşfet <span>→</span></button>
+              <button className="mt-6 text-[12px] font-bold text-[#334EAC] flex items-center gap-2 transition-all group-hover:gap-4 font-bold">
+                Keşfet <span>→</span>
+              </button>
             </div>
           ))}
         </div>
 
-        {/* 4. Son Eklenen Olaylar */}
-        <div className="mt-16 mb-8 px-4 flex items-center justify-between relative">
+        {/* 4. Son Eklenen Olaylar (BACKEND'DEN GELEN VERİ BURADA GÖZÜKÜR) */}
+        <div className="mt-16 mb-8 px-1 sm:px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 relative">
           <div>
-            <h2 className="text-2xl font-black tracking-tight font-sans">Son Eklenen Olaylar</h2>
-            <div className="h-1.5 w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2"></div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight font-sans">
+              Son Eklenen Olaylar
+            </h2>
+            <div className="h-1.5 w-20 sm:w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2" />
           </div>
           <div className="relative">
-            <button onClick={() => setIsSortOpen(!isSortOpen)} className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-white/5 rounded-lg text-sm font-bold hover:border-[#334EAC] transition-all">
+            <button
+              onClick={() => setIsSortOpen(!isSortOpen)}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-white/5 rounded-lg text-xs sm:text-sm font-bold hover:border-[#334EAC] transition-all"
+            >
               <span>Sırala: {sortBy}</span>
-              <span className={`transition-transform duration-300 ${isSortOpen ? 'rotate-180' : ''}`}>▼</span>
+              <span
+                className={`transition-transform duration-300 ${
+                  isSortOpen ? "rotate-180" : ""
+                }`}
+              >
+                ▼
+              </span>
             </button>
             {isSortOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-gray-100 dark:border-white/5 rounded-xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white dark:bg-[#1e293b] border border-gray-100 dark:border-white/5 rounded-xl shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in duration-200">
                 {["En Yeni", "En Eski", "Popüler", "A-Z"].map((option) => (
-                  <button key={option} onClick={() => { setSortBy(option); setIsSortOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-medium hover:bg-[#334EAC]/10 hover:text-[#334EAC] transition-colors font-bold">
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSortBy(option);
+                      setIsSortOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium hover:bg-[#334EAC]/10 hover:text-[#334EAC] transition-colors font-bold"
+                  >
                     {option}
                   </button>
                 ))}
@@ -199,72 +291,148 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2 text-black dark:text-white">
-          {recentStories.length > 0 ? recentStories.map((story, index) => (
-            <Link key={index} href={`/olay/${story.slug}`}>
-              <div className="group cursor-pointer bg-white dark:bg-[#1e293b]/30 rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col hover:-translate-y-2 h-full">
-                <div className="relative h-48 w-full overflow-hidden">
-                  <Image src={story.imageUrl} alt={story.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                    <span className="px-5 py-2 bg-white text-black text-xs font-black rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 font-bold">Devamını Oku</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-1 sm:px-2 text-black dark:text-white">
+          {recentStories.length > 0 ? (
+            recentStories.map((story, index) => (
+              <Link key={index} href={`/olay/${story.slug}`}>
+                <div className="group cursor-pointer bg-white dark:bg-[#1e293b]/30 rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col hover:-translate-y-2 h-full">
+                  <div className="relative h-44 sm:h-48 w-full overflow-hidden">
+                    <Image
+                      src={story.imageUrl}
+                      alt={story.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                      <span className="px-4 sm:px-5 py-2 bg-white text-black text-[11px] sm:text-xs font-black rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 font-bold">
+                        Devamını Oku
+                      </span>
+                    </div>
+                    <span className="absolute top-3 sm:top-4 left-3 sm:left-4 px-3 py-1 rounded-lg bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md text-[#334EAC] text-[10px] font-black uppercase tracking-wider shadow-sm font-bold">
+                      {story.category}
+                    </span>
                   </div>
-                  <span className="absolute top-4 left-4 px-3 py-1 rounded-lg bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md text-[#334EAC] text-[10px] font-black uppercase tracking-wider shadow-sm font-bold">
-                    {story.category}
-                  </span>
-                </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="text-gray-400 text-[10px] font-bold mb-2 uppercase tracking-tight">{story.date}</div>
-                  <h3 className="text-lg font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight font-bold font-sans">{story.title}</h3>
-                  <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-6 font-medium">{story.excerpt}</p>
-                  <div className="mt-auto pt-4 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[11px]">
-                    <span className="text-gray-400 font-bold italic">{story.readTime} okuma</span>
-                    <span className="text-[#334EAC] font-bold group-hover:underline">İncele →</span>
+                  <div className="p-4 sm:p-6 flex-1 flex flex-col">
+                    <div className="text-[10px] sm:text-[11px] text-gray-400 font-bold mb-2 uppercase tracking-tight">
+                      {story.date}
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight font-bold font-sans">
+                      {story.title}
+                    </h3>
+                    <p className="text-[12px] sm:text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4 sm:mb-6 font-medium">
+                      {story.excerpt}
+                    </p>
+                    <div className="mt-auto pt-3 sm:pt-4 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[10px] sm:text-[11px]">
+                      <span className="text-gray-400 font-bold italic">
+                        {story.readTime} okuma
+                      </span>
+                      <span className="text-[#334EAC] font-bold group-hover:underline">
+                        İncele →
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          )) : (
-            <p className="col-span-full text-center text-gray-400 italic font-bold py-10">Arşivden veriler getiriliyor...</p>
+              </Link>
+            ))
+          ) : (
+            <p className="col-span-full text-center text-gray-400 italic font-bold py-10">
+              Arşivden veriler getiriliyor...
+            </p>
           )}
         </div>
       </main>
 
       {/* FOOTER */}
-      <footer className="mt-20 border-t border-gray-200 dark:border-[#334EAC]/20 bg-gray-50 dark:bg-[#1e293b] pt-16 pb-8 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12 text-black dark:text-white">
+      <footer className="mt-20 border-t border-gray-200 dark:border-[#334EAC]/20 bg-gray-50 dark:bg-[#1e293b] pt-10 sm:pt-16 pb-8 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12 text-black dark:text-white">
           <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-6 cursor-pointer group">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">TK</div>
-              <span className="text-xl font-bold tracking-tight font-sans">Tarih Deposu</span>
+            <Link
+              href="/"
+              className="flex items-center gap-2 mb-4 sm:mb-6 cursor-pointer group"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">
+                TK
+              </div>
+              <span className="text-lg sm:text-xl font-bold tracking-tight font-sans">
+                Tarih Deposu
+              </span>
             </Link>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
-              Geçmişin tozlu sayfalarını dijital dünyaya taşıyoruz. Tarihin her anını keşfetmek için buradayız.
+              Geçmişin tozlu sayfalarını dijital dünyaya taşıyoruz. Tarihin her
+              anını keşfetmek için buradayız.
             </p>
           </div>
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Hızlı Erişim</h4>
-            <ul className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
-              <li><Link href="/" className="hover:text-[#334EAC] transition-colors font-sans">Ana Sayfa</Link></li>
-              <li><Link href="/hakkinda" className="hover:text-[#334EAC] transition-colors font-sans">Hakkımızda</Link></li>
-              <li><Link href="/depo" className="hover:text-[#334EAC] transition-colors font-sans">Depo</Link></li>
+            <h4 className="font-bold text-sm mb-4 sm:mb-6 uppercase tracking-widest text-[#334EAC]">
+              Hızlı Erişim
+            </h4>
+            <ul className="space-y-3 sm:space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
+              <li>
+                <Link
+                  href="/"
+                  className="hover:text-[#334EAC] transition-colors font-sans"
+                >
+                  Ana Sayfa
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/hakkinda"
+                  className="hover:text-[#334EAC] transition-colors font-sans"
+                >
+                  Hakkımızda
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/depo"
+                  className="hover:text-[#334EAC] transition-colors font-sans"
+                >
+                  Depo
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Topluluk</h4>
-            <ul className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
-              <li><a href="#" className="hover:text-[#334EAC] transition-colors">Yazar Ol</a></li>
-              <li><a href="#" className="hover:text-[#334EAC] transition-colors">İletişim</a></li>
+            <h4 className="font-bold text-sm mb-4 sm:mb-6 uppercase tracking-widest text-[#334EAC]">
+              Topluluk
+            </h4>
+            <ul className="space-y-3 sm:space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-[#334EAC] transition-colors"
+                >
+                  Yazar Ol
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-[#334EAC] transition-colors"
+                >
+                  İletişim
+                </a>
+              </li>
             </ul>
           </div>
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Bültene Katıl</h4>
-            <div className="flex gap-2">
-              <input type="email" placeholder="E-posta" className="bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/5 rounded-lg px-3 py-2 text-xs w-full focus:outline-none focus:border-[#334EAC] font-bold" />
-              <button className="bg-[#334EAC] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#283d87] transition-all shadow-md">Kaydol</button>
+            <h4 className="font-bold text-sm mb-4 sm:mb-6 uppercase tracking-widest text-[#334EAC]">
+              Bültene Katıl
+            </h4>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="email"
+                placeholder="E-posta"
+                className="bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/5 rounded-lg px-3 py-2 text-xs w-full focus:outline-none focus:border-[#334EAC] font-bold"
+              />
+              <button className="bg-[#334EAC] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#283d87] transition-all shadow-md">
+                Kaydol
+              </button>
             </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-16 mt-16 pt-8 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-xs font-bold uppercase tracking-widest">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-gray-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4 text-gray-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
           <p>© 2024 Tarih Deposu. Tüm hakları saklıdır.</p>
         </div>
       </footer>

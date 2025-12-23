@@ -1,54 +1,15 @@
-'use client';
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function Hakkinda() {
-  const [darkMode, setDarkMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setDarkMode(isDark);
-      setMounted(true);
-    };
-    window.requestAnimationFrame(checkTheme);
-  }, []);
-
-  const toggleDarkMode = () => {
-    const nextMode = !darkMode;
-    setDarkMode(nextMode);
-    if (nextMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
-
-  if (!mounted) return null;
+  // Buradaki tüm useState, useEffect ve toggleDarkMode fonksiyonlarını sildik.
+  // Çünkü tema kontrolü artık ana Layout dosyasından yapılıyor.
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans scroll-smooth">
       
-      {/* Navbar */}
-      <nav className="flex items-center justify-between px-16 py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50 transition-all duration-500">
-        <Link href="/" className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform">
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">TK</div>
-          <span className="text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors font-sans">Tarih Deposu</span>
-        </Link>
-        <div className="flex items-center gap-8 text-sm font-medium">
-          <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold font-sans">Ana Sayfa</Link>
-          <Link href="/hakkinda" className="text-[#334EAC] font-bold font-sans">Hakkında</Link>
-          {/* DEPO LİNKİ BAĞLANDI */}
-          <Link href="/depo" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold font-sans">Depo</Link>
-          <button onClick={toggleDarkMode} className="ml-2 p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white transition-all shadow-md active:scale-90 hover:scale-110">{darkMode ? "☀️" : "🌙"}</button>
-        </div>
-      </nav>
-
       <main className="max-w-5xl mx-auto px-8 py-20 font-sans animate-in fade-in slide-in-from-bottom-4 duration-1000">
         <section className="text-center mb-20">
-          <span className="text-[#334EAC] font-bold text-sm tracking-[0.3em] uppercase mb-4 block italic font-bold">Manifestomuz</span>
+          <span className="text-[#334EAC] font-bold text-sm tracking-[0.3em] uppercase mb-4 block italic">Manifestomuz</span>
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-8 leading-tight font-sans">Geçmişi <span className="text-[#334EAC]">Yeniden</span> Keşfet</h1>
           <div className="h-1.5 w-32 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mx-auto"></div>
         </section>
@@ -74,7 +35,7 @@ export default function Hakkinda() {
             ].map((stat) => (
                 <div key={stat.label} className="p-8 rounded-2xl border border-gray-100 dark:border-white/5 bg-white dark:bg-[#0f172a] shadow-lg hover:border-[#334EAC]/40 transition-all duration-300">
                     <div className="text-4xl font-black text-[#334EAC] mb-2 font-bold">{stat.value}</div>
-                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest font-bold">{stat.label}</div>
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">{stat.label}</div>
                 </div>
             ))}
           </div>
@@ -98,7 +59,7 @@ export default function Hakkinda() {
         <div className="max-w-7xl mx-auto px-16 grid grid-cols-1 md:grid-cols-4 gap-12 text-black dark:text-white">
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6 cursor-pointer group">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold font-sans">TK</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-sans">TK</div>
               <span className="text-xl font-bold tracking-tight font-sans">Tarih Deposu</span>
             </Link>
             <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
@@ -107,30 +68,29 @@ export default function Hakkinda() {
           </div>
 
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC] font-bold">Hızlı Erişim</h4>
+            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Hızlı Erişim</h4>
             <ul className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
-              <li><Link href="/" className="hover:text-[#334EAC] transition-colors font-bold font-sans">Ana Sayfa</Link></li>
-              <li><Link href="/hakkinda" className="hover:text-[#334EAC] transition-colors font-bold font-sans">Hakkımızda</Link></li>
-              {/* FOOTER DEPO LİNKİ BAĞLANDI */}
-              <li><Link href="/depo" className="hover:text-[#334EAC] transition-colors font-bold font-sans">Depo</Link></li>
-              <li><Link href="/#populer-olaylar" className="hover:text-[#334EAC] transition-colors font-bold font-sans">Popüler Olaylar</Link></li>
+              <li><Link href="/" className="hover:text-[#334EAC] transition-colors font-sans">Ana Sayfa</Link></li>
+              <li><Link href="/hakkinda" className="hover:text-[#334EAC] transition-colors font-sans">Hakkımızda</Link></li>
+              <li><Link href="/depo" className="hover:text-[#334EAC] transition-colors font-sans">Depo</Link></li>
+              <li><Link href="/#populer-olaylar" className="hover:text-[#334EAC] transition-colors font-sans">Popüler Olaylar</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC] font-bold">Topluluk</h4>
-            <ul className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400 font-bold">
-              <li><a href="#" className="hover:text-[#334EAC] transition-colors font-bold">Yazar Ol</a></li>
-              <li><Link href="/hakkinda" className="hover:text-[#334EAC] transition-colors font-bold">Hakkımızda</Link></li>
-              <li><a href="#" className="hover:text-[#334EAC] transition-colors font-bold">İletişim</a></li>
+            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Topluluk</h4>
+            <ul className="space-y-4 text-sm font-bold text-gray-600 dark:text-gray-400">
+              <li><a href="#" className="hover:text-[#334EAC] transition-colors">Yazar Ol</a></li>
+              <li><Link href="/hakkinda" className="hover:text-[#334EAC] transition-colors">Hakkımızda</Link></li>
+              <li><a href="#" className="hover:text-[#334EAC] transition-colors">İletişim</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC] font-bold">Bültene Katıl</h4>
+            <h4 className="font-bold text-sm mb-6 uppercase tracking-widest text-[#334EAC]">Bültene Katıl</h4>
             <div className="flex gap-2">
               <input type="email" placeholder="E-posta" className="bg-white dark:bg-[#0f172a] border border-gray-200 dark:border-white/5 rounded-lg px-3 py-2 text-xs w-full focus:outline-none focus:border-[#334EAC] font-bold" />
-              <button className="bg-[#334EAC] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#283d87] transition-all shadow-md font-bold">Kaydol</button>
+              <button className="bg-[#334EAC] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#283d87] transition-all shadow-md">Kaydol</button>
             </div>
           </div>
         </div>
