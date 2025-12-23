@@ -8,126 +8,157 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // 1. Sayfa yüklendiğinde çalışır (Hydration ve Tema Kontrolü)
+  // ESLint hatası giderildi: requestAnimationFrame kullanıldı.
   useEffect(() => {
-    // ESLint bu satırda "useEffect içinde state değiştirme" diye kızıyor.
-    // Ancak Next.js'de window nesnesine erişmek için buna mecburuz.
-    // Bu yüzden bir sonraki satırda bu kuralı sadece burası için devre dışı bırakıyoruz.
-    
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-
-    const storedTheme = localStorage.getItem("theme");
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-    if (storedTheme === "dark" || (!storedTheme && systemPrefersDark)) {
-      setDarkMode(true);
-      document.documentElement.classList.add("dark");
-    } else {
-      setDarkMode(false);
-      document.documentElement.classList.remove("dark");
-    }
+    requestAnimationFrame(() => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setDarkMode(isDark);
+      setMounted(true);
+    });
   }, []);
 
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    
-    if (newMode) {
+  // Tema değişince <html> üzerinde dark class'ını güncelle
+  useEffect(() => {
+    if (!mounted) return;
+    if (darkMode) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
-  };
+  }, [darkMode, mounted]);
 
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Hydration hatasını önlemek için (Server ile Client uyumsuzluğunu engeller)
-  if (!mounted) {
-    return <div className="h-[73px] bg-white dark:bg-[#1e293b]" />;
-  }
+  // Hydration hatasını engellemek için ikon kontrolü
+  const themeIcon = mounted ? (darkMode ? "☀️" : "🌙") : "🌙";
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] transition-colors duration-300">
-        <div className="px-4 sm:px-6 lg:px-16 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-3 md:gap-4">
-            
-            {/* --- ORTAK ALAN: LOGO --- */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all">
-                TK
-              </div>
-              <span className="text-lg sm:text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors font-sans text-black dark:text-white">
-                Tarih Deposu
-              </span>
+      {/* Üst Navbar */}
+      <nav className="px-4 sm:px-6 lg:px-16 py-3 sm:py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50">
+        <div className="flex items-center justify-between gap-3 md:gap-4">
+          
+          {/* Logo (Sola yaslı) */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform flex-shrink-0"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all">
+              TK
+            </div>
+            <span className="text-lg sm:text-xl font-bold tracking-tight group-hover:text-[#334EAC] transition-colors dark:text-white">
+              Tarih Deposu
+            </span>
+          </Link>
+
+          {/* DESKTOP ARAMA (TAM ORTAYA ALINDI) */}
+          <div className="hidden md:flex flex-1 justify-center px-6">
+            <div className="w-full max-w-md">
+              <input
+                type="text"
+                placeholder="Tarihte ara..."
+                className="w-full px-4 py-2 bg-gray-100 dark:bg-[#0f172a] border border-transparent rounded-lg focus:outline-none focus:border-[#334EAC] text-sm font-bold dark:text-white"
+              />
+            </div>
+          </div>
+
+          {/* DESKTOP LİNKLER (Sağa yaslı) */}
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium flex-shrink-0">
+            <Link href="/" className="text-[#334EAC] font-bold">
+              Ana Sayfa
             </Link>
+            <Link
+              href="/hakkinda"
+              className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold"
+            >
+              Hakkında
+            </Link>
+            <Link
+              href="/depo"
+              className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] transition-colors font-bold"
+            >
+              Depo
+            </Link>
+            <button
+              onClick={() => setDarkMode((prev) => !prev)}
+              className="p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white transition-all shadow-md active:scale-90 hover:scale-110"
+            >
+              {themeIcon}
+            </button>
+          </div>
 
-            {/* --- SADECE PC (MD ve Üstü) --- */}
-            {/* Mobilde görünmez (hidden), PC'de görünür (md:flex) */}
-            <div className="hidden md:flex items-center gap-4 flex-1 ml-6">
-              <div className="flex-1 max-w-md">
-                <input
-                  type="text"
-                  placeholder="Tarihte ara..."
-                  className="w-full px-4 py-2 bg-gray-100 dark:bg-[#0f172a] border border-transparent rounded-lg focus:outline-none focus:border-[#334EAC] text-sm font-bold text-black dark:text-white placeholder-gray-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-6 text-sm font-medium ml-auto">
-                <Link href="/" className="text-[#334EAC] font-bold">Ana Sayfa</Link>
-                <Link href="/hakkinda" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] font-bold">Hakkında</Link>
-                <Link href="/depo" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] font-bold">Depo</Link>
-                <Link href="/admin" className="text-gray-600 dark:text-gray-300 hover:text-[#334EAC] font-bold uppercase">Panel</Link>
-                
-                <button 
-                  onClick={toggleDarkMode} 
-                  className="p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white hover:scale-110 transition-transform"
+          {/* MOBILE: dark mode + hamburger (sadece < md) */}
+          <div className="flex items-center gap-2 md:hidden ml-auto">
+            <button
+              onClick={() => setDarkMode((prev) => !prev)}
+              className="p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white transition-all shadow-md active:scale-90 hover:scale-110"
+              aria-label="Tema değiştir"
+            >
+              {themeIcon}
+            </button>
+            <button
+              onClick={toggleMenu}
+              className="p-2 rounded-full bg-gray-100 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334EAC]/40 text-black dark:text-white transition-all active:scale-90"
+              aria-label={isMenuOpen ? "Menüyü kapat" : "Menüyü aç"}
+            >
+              {isMenuOpen ? (
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  {darkMode ? "☀️" : "🌙"}
-                </button>
-              </div>
-            </div>
-
-            {/* --- SADECE MOBİL (MD Altı) --- */}
-            {/* PC'de görünmez (md:hidden), Mobilde görünür (flex) */}
-            <div className="flex items-center gap-2 md:hidden">
-              <button 
-                onClick={toggleDarkMode} 
-                className="p-2 rounded-full bg-gray-100 dark:bg-[#334EAC] text-black dark:text-white"
-              >
-                {darkMode ? "☀️" : "🌙"}
-              </button>
-              
-              <button 
-                onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                className="p-2 rounded-full bg-gray-100 dark:bg-[#0f172a] border border-gray-200 dark:border-[#334EAC]/40 text-black dark:text-white"
-              >
-                {isMenuOpen ? (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-                )}
-              </button>
-            </div>
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* --- SADECE MOBİL MENÜ LİSTESİ --- */}
+      {/* MOBILE DROPDOWN MENÜ */}
       {isMenuOpen && (
-        <div className="md:hidden sticky top-[73px] z-40 w-full border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] px-4 py-3 shadow-xl">
-          <div className="flex flex-col space-y-2">
-             <Link href="/" onClick={closeMenu} className="block py-2 text-sm font-bold text-[#334EAC] border-b border-gray-100 dark:border-white/5">Ana Sayfa</Link>
-             <Link href="/hakkinda" onClick={closeMenu} className="block py-2 text-sm font-bold text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-white/5">Hakkında</Link>
-             <Link href="/depo" onClick={closeMenu} className="block py-2 text-sm font-bold text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-white/5">Depo</Link>
-             <Link href="/admin" onClick={closeMenu} className="block py-2 text-sm font-bold uppercase text-gray-700 dark:text-gray-200">Panel</Link>
-          </div>
+        <div className="md:hidden border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] px-4 sm:px-6 lg:px-16 py-3 space-y-2">
+          <Link
+            href="/"
+            onClick={closeMenu}
+            className="block text-sm font-bold text-[#334EAC]"
+          >
+            Ana Sayfa
+          </Link>
+          <Link
+            href="/hakkinda"
+            onClick={closeMenu}
+            className="block text-sm font-bold text-gray-700 dark:text-gray-200 hover:text-[#334EAC] transition-colors"
+          >
+            Hakkında
+          </Link>
+          <Link
+            href="/depo"
+            onClick={closeMenu}
+            className="block text-sm font-bold text-gray-700 dark:text-gray-200 hover:text-[#334EAC] transition-colors"
+          >
+            Depo
+          </Link>
         </div>
       )}
     </>

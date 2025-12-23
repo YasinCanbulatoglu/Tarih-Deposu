@@ -20,14 +20,18 @@ body {
 
 /* KAYAN BANT (MARQUEE) ANIMASYONU */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 35s linear infinite; /* Kartlar olduğu için biraz daha yavaşlattım */
+  animation: marquee 35s linear infinite;
 }
 
 .animate-marquee:hover {

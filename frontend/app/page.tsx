@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. Veri yapısını (Interface) tanımlıyoruz
+// Backend'den gelen event tipi
 interface HistoricalEvent {
   id: number;
   title: string;
@@ -12,14 +12,14 @@ interface HistoricalEvent {
   short_description: string;
   details: string;
   date_day: number;
-  date_month: string;
+  date_month: number;
   date_year: number;
   era: string;
   category: string;
-  cover_image: string;
+  cover_image: string | null;
 }
 
-// 2. Tasarımdaki kart yapısı için yardımcı tip
+// UI'da kullandığımız kart tipi
 interface StoryCard {
   title: string;
   slug: string;
@@ -27,7 +27,7 @@ interface StoryCard {
   excerpt: string;
   date: string;
   readTime: string;
-  imageUrl: string;
+  imageUrl: string | null;
 }
 
 export default function Home() {
@@ -35,22 +35,19 @@ export default function Home() {
   const [sortBy, setSortBy] = useState("En Yeni");
   const [recentStories, setRecentStories] = useState<StoryCard[]>([]);
 
+  // Backend API'den veriyi çek
   useEffect(() => {
     fetch("http://localhost:5000/api/events")
       .then((res) => res.json())
       .then((data: HistoricalEvent[]) => {
-        const formattedData: StoryCard[] = data.map((event: HistoricalEvent) => ({
+        const formattedData: StoryCard[] = data.map((event) => ({
           title: event.title,
           slug: event.slug,
           category: event.category || "Tarih",
           excerpt: event.short_description,
-          date: `${event.date_day} ${event.date_month} ${event.date_year}`,
+          date: `${event.date_day}.${event.date_month + 1}.${event.date_year}`,
           readTime: "5 dk",
-          // HATA ÇÖZÜMÜ: Eğer resim linki 'http' ile başlamıyorsa (örn: 'resim.jpg' ise) varsayılan resmi koy.
-          imageUrl:
-            event.cover_image && event.cover_image.startsWith("http")
-              ? event.cover_image
-              : "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800",
+          imageUrl: event.cover_image, // ham değer; render tarafında kontrol edeceğiz
         }));
         setRecentStories(formattedData);
       })
@@ -135,6 +132,22 @@ export default function Home() {
     },
   ];
 
+  const fallbackImage =
+    "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800";
+
+  const getSafeImageSrc = (url: string | null): string => {
+    if (!url) return fallbackImage;
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("/")
+    ) {
+      return url;
+    }
+    // DB'ye yanlış/eksik URL girilmişse bile app patlamasın:
+    return fallbackImage;
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans scroll-smooth">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16 font-sans">
@@ -143,7 +156,7 @@ export default function Home() {
           <div className="absolute -top-24 -right-24 h-64 sm:h-80 w-64 sm:w-80 bg-[#334EAC]/10 rounded-full blur-[80px]" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4 sm:mb-6 text-[#334EAC]">
-              <span className="cursor-default px-3 sm:px-4 py-1.5 rounded-full bg-[#334EAC]/10 text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-[#334EAC]/20 transition-all duration-300 hover:-translate-y-1 font-bold">
+              <span className="cursor-default px-3 sm:px-4 py-1.5 rounded-full bg-[#334EAC]/10 text-[10px] sm:text-xs font-bold uppercase tracking-widest border border-[#334EAC]/20 transition-all duration-300 hover:-translate-y-1">
                 Günün Tarihi Notu
               </span>
             </div>
@@ -161,13 +174,13 @@ export default function Home() {
                 <div className="mt-6 sm:mt-8 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <div className="h-[1px] w-8 sm:w-10 bg-gray-300 dark:bg-zinc-700" />
-                    <cite className="text-[10px] sm:text-xs font-bold text-[#334EAC] not-italic tracking-widest uppercase font-bold">
+                    <cite className="text-[10px] sm:text-xs font-bold text-[#334EAC] not-italic tracking-widest uppercase">
                       Motive Edici Bir Başlangıç
                     </cite>
                   </div>
                   <Link
                     href="/depo"
-                    className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl bg-[#334EAC] text-white text-xs sm:text-sm font-bold hover:bg-[#283d87] transition-all shadow-lg shadow-[#334EAC]/20 active:scale-95 text-nowrap hover:-translate-y-1 font-bold"
+                    className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl bg-[#334EAC] text-white text-xs sm:text-sm font-bold hover:bg-[#283d87] transition-all shadow-lg shadow-[#334EAC]/20 active:scale-95 text-nowrap hover:-translate-y-1"
                   >
                     Arşivi Keşfet
                   </Link>
@@ -177,10 +190,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 2. Popüler Olaylar Bandı */}
+        {/* 2. Popüler Olaylar Bandı - MARQUEE */}
         <div
           id="populer-olaylar"
-          className="mt-10 px-4 sm:px-6 py-6 sm:py-8 bg-[#334EAC]/5 dark:bg-[#334EAC]/10 border border-[#334EAC]/10 rounded-xl relative shadow-sm overflow-hidden text-black dark:text-white"
+          className="mt-10 px-4 sm:px-6 py-6 sm:py-8 bg-[#334EAC]/5 dark:bg-[#334EAC]/10 border border-[#334EAC]/10 rounded-xl relative shadow-sm text-black dark:text-white"
         >
           <div className="mb-4 px-1 sm:px-4">
             <h2 className="text-xl sm:text-2xl font-black tracking-tight font-sans">
@@ -188,19 +201,22 @@ export default function Home() {
             </h2>
             <div className="h-1.5 w-20 sm:w-24 bg-gradient-to-r from-[#334EAC] to-transparent rounded-full mt-2" />
           </div>
-          <div className="relative overflow-visible py-6 sm:py-10">
-            <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:animate-marquee overflow-visible">
+
+          {/* Marquee container */}
+          <div className="relative overflow-hidden py-6 sm:py-10">
+            {/* Hareket eden satır */}
+            <div className="animate-marquee flex flex-row gap-4 md:gap-6">
               {[...popularEvents, ...popularEvents].map((event, index) => (
                 <Link key={index} href={`/olay/${event.slug}`}>
-                  <div className="w-full md:min-w-[320px] mx-0 md:mx-4 mb-2 md:mb-0 p-5 sm:p-6 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group relative z-10 flex flex-col justify-between h-48 sm:h-52">
+                  <div className="mx-2 min-w-[280px] sm:min-w-[320px] p-5 sm:p-6 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group flex flex-col justify-between h-48 sm:h-52">
                     <div>
-                      <span className="inline-block px-3 py-1 rounded-md bg-[#334EAC]/10 text-[10px] sm:text-[11px] font-black text-[#334EAC] uppercase tracking-[0.1em] mb-2 sm:mb-3 group-hover:bg-[#334EAC] group-hover:text-white transition-all font-bold">
+                      <span className="inline-block px-3 py-1 rounded-md bg-[#334EAC]/10 text-[10px] sm:text-[11px] font-black text-[#334EAC] uppercase tracking-[0.1em] mb-2 sm:mb-3 group-hover:bg-[#334EAC] group-hover:text-white transition-all">
                         {event.date}
                       </span>
-                      <h3 className="text-base sm:text-lg font-black group-hover:text-[#334EAC] transition-colors leading-tight mb-2 font-bold">
+                      <h3 className="text-base sm:text-lg font-black group-hover:text-[#334EAC] transition-colors leading-tight mb-2">
                         {event.title}
                       </h3>
-                      <p className="text-[11px] sm:text-[12px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-medium">
+                      <p className="text-[11px] sm:text-[12px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         {event.desc}
                       </p>
                     </div>
@@ -233,24 +249,24 @@ export default function Home() {
               className="p-5 sm:p-6 rounded-xl bg-gray-50 dark:bg-[#1e293b]/50 border border-transparent dark:border-white/5 shadow-sm flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-[#334EAC]/40 group active:scale-95"
             >
               <div>
-                <span className="text-[9px] font-bold text-[#334EAC] opacity-80 uppercase tracking-widest bg-[#334EAC]/5 px-2 py-1 rounded-md transition-colors group-hover:bg-[#334EAC] group-hover:text-white font-bold">
+                <span className="text-[9px] font-bold text-[#334EAC] opacity-80 uppercase tracking-widest bg-[#334EAC]/5 px-2 py-1 rounded-md transition-colors group-hover:bg-[#334EAC] group-hover:text-white">
                   {era.tag}
                 </span>
-                <h3 className="text-lg font-black mt-4 mb-2 tracking-tight group-hover:text-[#334EAC] transition-colors font-bold font-sans">
+                <h3 className="text-lg font-black mt-4 mb-2 tracking-tight group-hover:text-[#334EAC] transition-colors font-sans">
                   {era.title}
                 </h3>
                 <p className="text-[12px] text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3 font-medium">
                   {era.description}
                 </p>
               </div>
-              <button className="mt-6 text-[12px] font-bold text-[#334EAC] flex items-center gap-2 transition-all group-hover:gap-4 font-bold">
+              <button className="mt-6 text-[12px] font-bold text-[#334EAC] flex items-center gap-2 transition-all group-hover:gap-4">
                 Keşfet <span>→</span>
               </button>
             </div>
           ))}
         </div>
 
-        {/* 4. Son Eklenen Olaylar (BACKEND'DEN GELEN VERİ BURADA GÖZÜKÜR) */}
+        {/* 4. Son Eklenen Olaylar */}
         <div className="mt-16 mb-8 px-1 sm:px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 relative">
           <div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight font-sans">
@@ -291,49 +307,53 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Son Eklenen Olaylar grid'i */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-1 sm:px-2 text-black dark:text-white">
           {recentStories.length > 0 ? (
-            recentStories.map((story, index) => (
-              <Link key={index} href={`/olay/${story.slug}`}>
-                <div className="group cursor-pointer bg-white dark:bg-[#1e293b]/30 rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col hover:-translate-y-2 h-full">
-                  <div className="relative h-44 sm:h-48 w-full overflow-hidden">
-                    <Image
-                      src={story.imageUrl}
-                      alt={story.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                      <span className="px-4 sm:px-5 py-2 bg-white text-black text-[11px] sm:text-xs font-black rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 font-bold">
-                        Devamını Oku
+            recentStories.map((story, index) => {
+              const imageSrc = getSafeImageSrc(story.imageUrl ?? null);
+              return (
+                <Link key={index} href={`/olay/${story.slug}`}>
+                  <div className="group cursor-pointer bg-white dark:bg-[#1e293b]/30 rounded-xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col hover:-translate-y-2 h-full">
+                    <div className="relative h-44 sm:h-48 w-full overflow-hidden">
+                      <Image
+                        src={imageSrc}
+                        alt={story.title}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                        <span className="px-4 sm:px-5 py-2 bg-white text-black text-[11px] sm:text-xs font-black rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          Devamını Oku
+                        </span>
+                      </div>
+                      <span className="absolute top-3 sm:top-4 left-3 sm:left-4 px-3 py-1 rounded-lg bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md text-[#334EAC] text-[10px] font-black uppercase tracking-wider shadow-sm">
+                        {story.category}
                       </span>
                     </div>
-                    <span className="absolute top-3 sm:top-4 left-3 sm:left-4 px-3 py-1 rounded-lg bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-md text-[#334EAC] text-[10px] font-black uppercase tracking-wider shadow-sm font-bold">
-                      {story.category}
-                    </span>
+                    <div className="p-4 sm:p-6 flex-1 flex flex-col">
+                      <div className="text-[10px] sm:text-[11px] text-gray-400 font-bold mb-2 uppercase tracking-tight">
+                        {story.date}
+                      </div>
+                      <h3 className="text-base sm:text-lg font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight font-sans">
+                        {story.title}
+                      </h3>
+                      <p className="text-[12px] sm:text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4 sm:mb-6 font-medium">
+                        {story.excerpt}
+                      </p>
+                      <div className="mt-auto pt-3 sm:pt-4 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[10px] sm:text-[11px]">
+                        <span className="text-gray-400 font-bold italic">
+                          {story.readTime} okuma
+                        </span>
+                        <span className="text-[#334EAC] font-bold group-hover:underline">
+                          İncele →
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-4 sm:p-6 flex-1 flex flex-col">
-                    <div className="text-[10px] sm:text-[11px] text-gray-400 font-bold mb-2 uppercase tracking-tight">
-                      {story.date}
-                    </div>
-                    <h3 className="text-base sm:text-lg font-black mb-3 group-hover:text-[#334EAC] transition-colors leading-tight font-bold font-sans">
-                      {story.title}
-                    </h3>
-                    <p className="text-[12px] sm:text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-4 sm:mb-6 font-medium">
-                      {story.excerpt}
-                    </p>
-                    <div className="mt-auto pt-3 sm:pt-4 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[10px] sm:text-[11px]">
-                      <span className="text-gray-400 font-bold italic">
-                        {story.readTime} okuma
-                      </span>
-                      <span className="text-[#334EAC] font-bold group-hover:underline">
-                        İncele →
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))
+                </Link>
+              );
+            })
           ) : (
             <p className="col-span-full text-center text-gray-400 italic font-bold py-10">
               Arşivden veriler getiriliyor...
@@ -350,7 +370,7 @@ export default function Home() {
               href="/"
               className="flex items-center gap-2 mb-4 sm:mb-6 cursor-pointer group"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all font-bold">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-[#334EAC] text-white font-bold text-xs shadow-lg shadow-[#334EAC]/20 group-hover:rotate-12 transition-all">
                 TK
               </div>
               <span className="text-lg sm:text-xl font-bold tracking-tight font-sans">
