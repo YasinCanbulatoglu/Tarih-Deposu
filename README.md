@@ -1,4 +1,5 @@
 📜 Tarih Deposu (TK) TÜRKÇE AÇIKLAMA 
+
 Selamlar! Bu proje benim "şu tarih işini düzgün bir yere toplayayım" diyerek başladığım, Next.js ile geliştirdiğim dijital arşiv çalışmam. Öyle sağdan soldan kopyala-yapıştır yapıp bırakmadım; her butonuyla, karanlık moduyla, mobil uyumuyla tek tek uğraştım.
 
 🚀 Mevzu Ne?
@@ -45,6 +46,7 @@ Eğer Telefon yada sanal bir emülatöre kurulcaksa Vanguard gibi emülatörü b
 
 
 📜 History Depot (TK)  ENGLISH EXPLANATION
+
 Yo! This is my digital archive project that I built with Next.js because I wanted to gather all this history stuff in one proper place. I didn't just copy-paste some code and call it a day; I spent hours on every single button, dark mode toggle, and mobile responsiveness.
 
 🚀 What’s the Deal?
