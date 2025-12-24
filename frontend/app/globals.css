@@ -37,3 +37,65 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* Sayı inputlarındaki okları (spinner) gizle */
+
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox ve Standart */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield; /* Standart özellik eklendi, uyarı gidecek */
+}
+
+/* --- MODERN SCROLLBAR TASARIMI --- */
+
+/* Scrollbar genişliği ve yüksekliği */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+/* Kaydırma yolu (Arka plan) */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Kayan çubuk (Thumb) */
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Işık modu için yumuşak gri */
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Üzerine gelince renk değişimi */
+::-webkit-scrollbar-thumb:hover {
+  background: #334EAC; /* Senin ana mavi rengin */
+  background-clip: content-box;
+}
+
+/* Karanlık Mod Uyarlaması */
+:where(.dark) ::-webkit-scrollbar-thumb {
+  background: #475569; /* Karanlık modda daha belirgin gri */
+  background-clip: content-box;
+}
+
+:where(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #334EAC;
+}
+
+/* Firefox için standart destek */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+:where(.dark) * {
+  scrollbar-color: #475569 transparent;
+}

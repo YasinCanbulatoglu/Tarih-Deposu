@@ -40,100 +40,79 @@ export default function Home() {
     fetch("http://localhost:5000/api/events")
       .then((res) => res.json())
       .then((data: HistoricalEvent[]) => {
-        const formattedData: StoryCard[] = data.map((event) => ({
-          title: event.title,
-          slug: event.slug,
-          category: event.category || "Tarih",
-          excerpt: event.short_description,
-          date: `${event.date_day}.${event.date_month + 1}.${event.date_year}`,
-          readTime: "5 dk",
-          imageUrl: event.cover_image, // ham değer; render tarafında kontrol edeceğiz
-        }));
+        const formattedData: StoryCard[] = data.map((event) => {
+          // --- İSTEK 1: ÖZET SINIRINI 50 YAP ---
+          // Veri çekilirken metni kısaltıyoruz, böylece her yerde kısa görünüyor.
+          let cleanExcerpt = event.short_description || "";
+          if (cleanExcerpt.length > 50) {
+            cleanExcerpt = cleanExcerpt.substring(0, 50) + "...";
+          }
+          // -------------------------------------
+
+          return {
+            title: event.title,
+            slug: event.slug,
+            category: event.category || "Tarih",
+            excerpt: cleanExcerpt, 
+            date: `${event.date_day}.${event.date_month}.${event.date_year}`,
+            readTime: "5 dk",
+            imageUrl: event.cover_image,
+          };
+        });
         setRecentStories(formattedData);
       })
       .catch((err) => console.error("Veri çekme hatası:", err));
   }, []);
 
-  const popularEvents = [
-    {
-      title: "İstanbul'un Fethi",
-      date: "1453",
-      slug: "istanbulun-fethi",
-      desc: "Doğu Roma'nın sonu, yeni bir çağın başlangıcı.",
-    },
-    {
-      title: "Fransız İhtilali",
-      date: "1789",
-      slug: "fransiz-ihtilali",
-      desc: "Mutlak monarşinin devrildiği modern dönüm noktası.",
-    },
-    {
-      title: "Ay'a İlk Adım",
-      date: "1969",
-      slug: "aya-ilk-adim",
-      desc: "İnsanlığın dünya dışındaki en büyük başarısı.",
-    },
-    {
-      title: "Cumhuriyetin İlanı",
-      date: "1923",
-      slug: "cumhuriyetin-ilani",
-      desc: "Modern Türkiye Cumhuriyeti'nin kuruluşu.",
-    },
-    {
-      title: "Rönesans",
-      date: "14. Yüzyıl",
-      slug: "ronesans",
-      desc: "Sanat ve bilimde yeniden doğuşun simgesi.",
-    },
-    {
-      title: "Sanayi Devrimi",
-      date: "1760",
-      slug: "sanayi-devrimi",
-      desc: "Üretim ve teknolojinin dünyayı değiştirdiği an.",
-    },
-    {
-      title: "Malazgirt Savaşı",
-      date: "1071",
-      slug: "malazgirt-savasi",
-      desc: "Anadolu'nun kapılarının Türklere açıldığı zafer.",
-    },
-    {
-      title: "Magna Carta",
-      date: "1215",
-      slug: "magna-carta",
-      desc: "Hukukun üstünlüğüne giden yolun ilk adımı.",
-    },
-  ];
+  // --- İSTEK 2: SIRALAMA MENÜSÜNÜ ÇALIŞTIR ---
+  // recentStories state'ini bozmadan, render sırasında sıralı bir kopya oluşturuyoruz.
+  const getSortedStories = () => {
+    const sorted = [...recentStories]; // Kopyasını al
+    
+    return sorted.sort((a, b) => {
+      // Tarihleri karşılaştırmak için (DD.MM.YYYY formatını YYYY-MM-DD'ye çevirip kıyaslıyoruz)
+      const dateA = a.date.split('.').reverse().join('-');
+      const dateB = b.date.split('.').reverse().join('-');
+
+      if (sortBy === 'A-Z') {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === 'En Eski') {
+        return dateA.localeCompare(dateB);
+      } else if (sortBy === 'En Yeni') {
+        // Varsayılan: En yeni tarih en üstte
+        return dateB.localeCompare(dateA);
+      }
+      return 0;
+    });
+  };
+
+  const sortedStoriesList = getSortedStories();
+  // ---------------------------------------------
 
   const historicalEras = [
     {
       title: "İlk Çağ",
-      description:
-        "Yazının icadından Roma'nın çöküşüne; antik siteler ve ilk kanunlar.",
+      description: "Yazının icadından Roma'nın çöküşüne; antik siteler ve ilk kanunlar.",
       tag: "M.Ö. 3200 - M.S. 476",
     },
     {
       title: "Orta Çağ",
-      description:
-        "Feodalizm, şövalyeler ve büyük imparatorlukların yükseliş dönemi.",
+      description: "Feodalizm, şövalyeler ve büyük imparatorlukların yükseliş dönemi.",
       tag: "476 - 1453",
     },
     {
       title: "Yeni Çağ",
-      description:
-        "Coğrafi keşifler, Rönesans ve matbaanın dünyayı değiştiren etkisi.",
+      description: "Coğrafi keşifler, Rönesans ve matbaanın dünyayı değiştiren etkisi.",
       tag: "1453 - 1789",
     },
     {
       title: "Yakın Çağ",
-      description:
-        "Fransız İhtilali'nden günümüze; endüstri, teknolojic ve uzay yarışı.",
+      description: "Fransız İhtilali'nden günümüze; endüstri, teknolojic ve uzay yarışı.",
       tag: "1789 - Günümüz",
     },
   ];
 
-  const fallbackImage =
-    "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800";
+  const fallbackImage = "https://images.unsplash.com/photo-1599733594230-6b823276abcc?q=80&w=800";
 
   const getSafeImageSrc = (url: string | null): string => {
     if (!url) return fallbackImage;
@@ -144,7 +123,6 @@ export default function Home() {
     ) {
       return url;
     }
-    // DB'ye yanlış/eksik URL girilmişse bile app patlamasın:
     return fallbackImage;
   };
 
@@ -206,18 +184,20 @@ export default function Home() {
           <div className="relative overflow-hidden py-6 sm:py-10">
             {/* Hareket eden satır */}
             <div className="animate-marquee flex flex-row gap-4 md:gap-6">
-              {[...popularEvents, ...popularEvents].map((event, index) => (
-                <Link key={index} href={`/olay/${event.slug}`}>
+              {/* Not: Marquee akışı için sorted değil, direkt gelen veriyi (recentStories) kullanıyoruz, 
+                  ancak özetler yukarıda 50 karaktere kırpıldı. */}
+              {[...recentStories, ...recentStories].map((story, index) => (
+                <Link key={index} href={`/olay/${story.slug}`}>
                   <div className="mx-2 min-w-[280px] sm:min-w-[320px] p-5 sm:p-6 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group flex flex-col justify-between h-48 sm:h-52">
                     <div>
                       <span className="inline-block px-3 py-1 rounded-md bg-[#334EAC]/10 text-[10px] sm:text-[11px] font-black text-[#334EAC] uppercase tracking-[0.1em] mb-2 sm:mb-3 group-hover:bg-[#334EAC] group-hover:text-white transition-all">
-                        {event.date}
+                        {story.date}
                       </span>
                       <h3 className="text-base sm:text-lg font-black group-hover:text-[#334EAC] transition-colors leading-tight mb-2">
-                        {event.title}
+                        {story.title}
                       </h3>
                       <p className="text-[11px] sm:text-[12px] text-gray-500 dark:text-gray-400 leading-snug line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        {event.desc}
+                        {story.excerpt}
                       </p>
                     </div>
                     <div className="flex items-center justify-between text-[#334EAC] mt-3">
@@ -244,8 +224,11 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {historicalEras.map((era, index) => (
-            <div
+            // --- İSTEK 3: TARİHSEL DÖNEMLERİ LINK YAPIP ÇALIŞTIR ---
+            // div yerine Link kullandık, böylece tıklanınca depoya filtre ile gidiyor.
+            <Link 
               key={index}
+              href={`/depo?era=${era.title}`}
               className="p-5 sm:p-6 rounded-xl bg-gray-50 dark:bg-[#1e293b]/50 border border-transparent dark:border-white/5 shadow-sm flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-[#334EAC]/40 group active:scale-95"
             >
               <div>
@@ -262,7 +245,7 @@ export default function Home() {
               <button className="mt-6 text-[12px] font-bold text-[#334EAC] flex items-center gap-2 transition-all group-hover:gap-4">
                 Keşfet <span>→</span>
               </button>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -309,8 +292,9 @@ export default function Home() {
 
         {/* Son Eklenen Olaylar grid'i */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 px-1 sm:px-2 text-black dark:text-white">
-          {recentStories.length > 0 ? (
-            recentStories.map((story, index) => {
+          {/* Burada sortedStoriesList kullanıyoruz ki sıralama çalışsın */}
+          {sortedStoriesList.length > 0 ? (
+            sortedStoriesList.map((story, index) => {
               const imageSrc = getSafeImageSrc(story.imageUrl ?? null);
               return (
                 <Link key={index} href={`/olay/${story.slug}`}>
