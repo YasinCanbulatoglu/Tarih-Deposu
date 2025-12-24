@@ -38,7 +38,6 @@ body {
   animation-play-state: paused;
 }
 
-/* Sayı inputlarındaki okları (spinner) gizle */
 
 /* Chrome, Safari, Edge, Opera */
 input[type="number"]::-webkit-outer-spin-button,
@@ -50,7 +49,7 @@ input[type="number"]::-webkit-inner-spin-button {
 /* Firefox ve Standart */
 input[type="number"] {
   -moz-appearance: textfield;
-  appearance: textfield; /* Standart özellik eklendi, uyarı gidecek */
+  appearance: textfield; 
 }
 
 /* --- MODERN SCROLLBAR TASARIMI --- */
@@ -68,21 +67,20 @@ input[type="number"] {
 
 /* Kayan çubuk (Thumb) */
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* Işık modu için yumuşak gri */
+  background: #cbd5e1; 
   border-radius: 20px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-/* Üzerine gelince renk değişimi */
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #334EAC; /* Senin ana mavi rengin */
+  background: #334EAC; 
   background-clip: content-box;
 }
 
-/* Karanlık Mod Uyarlaması */
 :where(.dark) ::-webkit-scrollbar-thumb {
-  background: #475569; /* Karanlık modda daha belirgin gri */
+  background: #475569; 
   background-clip: content-box;
 }
 

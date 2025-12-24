@@ -41,13 +41,10 @@ export default function Home() {
       .then((res) => res.json())
       .then((data: HistoricalEvent[]) => {
         const formattedData: StoryCard[] = data.map((event) => {
-          // --- İSTEK 1: ÖZET SINIRINI 50 YAP ---
-          // Veri çekilirken metni kısaltıyoruz, böylece her yerde kısa görünüyor.
           let cleanExcerpt = event.short_description || "";
           if (cleanExcerpt.length > 50) {
             cleanExcerpt = cleanExcerpt.substring(0, 50) + "...";
           }
-          // -------------------------------------
 
           return {
             title: event.title,
@@ -65,12 +62,10 @@ export default function Home() {
   }, []);
 
   // --- İSTEK 2: SIRALAMA MENÜSÜNÜ ÇALIŞTIR ---
-  // recentStories state'ini bozmadan, render sırasında sıralı bir kopya oluşturuyoruz.
   const getSortedStories = () => {
-    const sorted = [...recentStories]; // Kopyasını al
+    const sorted = [...recentStories]; 
     
     return sorted.sort((a, b) => {
-      // Tarihleri karşılaştırmak için (DD.MM.YYYY formatını YYYY-MM-DD'ye çevirip kıyaslıyoruz)
       const dateA = a.date.split('.').reverse().join('-');
       const dateB = b.date.split('.').reverse().join('-');
 
@@ -184,8 +179,7 @@ export default function Home() {
           <div className="relative overflow-hidden py-6 sm:py-10">
             {/* Hareket eden satır */}
             <div className="animate-marquee flex flex-row gap-4 md:gap-6">
-              {/* Not: Marquee akışı için sorted değil, direkt gelen veriyi (recentStories) kullanıyoruz, 
-                  ancak özetler yukarıda 50 karaktere kırpıldı. */}
+              {}
               {[...recentStories, ...recentStories].map((story, index) => (
                 <Link key={index} href={`/olay/${story.slug}`}>
                   <div className="mx-2 min-w-[280px] sm:min-w-[320px] p-5 sm:p-6 rounded-xl bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-white/5 shadow-md hover:shadow-2xl hover:-translate-y-4 hover:border-[#334EAC]/40 transition-all duration-500 cursor-pointer group flex flex-col justify-between h-48 sm:h-52">
@@ -224,8 +218,6 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {historicalEras.map((era, index) => (
-            // --- İSTEK 3: TARİHSEL DÖNEMLERİ LINK YAPIP ÇALIŞTIR ---
-            // div yerine Link kullandık, böylece tıklanınca depoya filtre ile gidiyor.
             <Link 
               key={index}
               href={`/depo?era=${era.title}`}

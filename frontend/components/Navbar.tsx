@@ -8,7 +8,6 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // ESLint hatası giderildi: requestAnimationFrame kullanıldı.
   useEffect(() => {
     requestAnimationFrame(() => {
       const isDark = document.documentElement.classList.contains("dark");
@@ -17,7 +16,7 @@ export default function Navbar() {
     });
   }, []);
 
-  // Tema değişince <html> üzerinde dark class'ını güncelle
+  // Tema değişince 
   useEffect(() => {
     if (!mounted) return;
     if (darkMode) {
@@ -30,7 +29,6 @@ export default function Navbar() {
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Hydration hatasını engellemek için ikon kontrolü
   const themeIcon = mounted ? (darkMode ? "☀️" : "🌙") : "🌙";
 
   return (
@@ -39,7 +37,7 @@ export default function Navbar() {
       <nav className="px-4 sm:px-6 lg:px-16 py-3 sm:py-4 border-b border-gray-200 dark:border-[#334EAC]/30 bg-white dark:bg-[#1e293b] sticky top-0 z-50">
         <div className="flex items-center justify-between gap-3 md:gap-4">
           
-          {/* Logo (Sola yaslı) */}
+          {/* Logo  */}
           <Link
             href="/"
             className="flex items-center gap-2 cursor-pointer group active:scale-95 transition-transform flex-shrink-0"
@@ -52,7 +50,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* DESKTOP ARAMA (TAM ORTAYA ALINDI) */}
+          {/* DESKTOP ARAMA  */}
           <div className="hidden md:flex flex-1 justify-center px-6">
             <div className="w-full max-w-md">
               <input
@@ -63,7 +61,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* DESKTOP LİNKLER (Sağa yaslı) */}
+          {/* DESKTOP LİNKLER  */}
           <div className="hidden md:flex items-center gap-6 text-sm font-medium flex-shrink-0">
             <Link href="/" className="text-[#334EAC] font-bold">
               Ana Sayfa
@@ -88,7 +86,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* MOBILE: dark mode + hamburger (sadece < md) */}
+          {/* MOBILE: dark mode + hamburger  */}
           <div className="flex items-center gap-2 md:hidden ml-auto">
             <button
               onClick={() => setDarkMode((prev) => !prev)}

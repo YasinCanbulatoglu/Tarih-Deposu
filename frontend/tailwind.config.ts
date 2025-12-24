@@ -12,30 +12,25 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // 1. Keyframes (Hareketin nasıl olacağı)
+      // Animasyon Temelleri
       keyframes: {
-        // Mevcut Kayan Yazı
         marquee: {
           "0%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(-50%)" },
         },
-        // --- YENİ EKLENEN: YUKARI KAYMA EFEKTİ ---
         fadeInUp: {
           "0%": { opacity: "0", transform: "translateY(15px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        // -----------------------------------------
       },
       
-      // 2. Animation (Hareketin süresi ve tipi)
+      // Animasyon Kullanımları
       animation: {
-        // Mevcut Kayan Yazı Animasyonu
         marquee: "marquee 35s linear infinite",
-        // --- YENİ EKLENEN: ANİMASYON TANIMI ---
         fadeInUp: "fadeInUp 0.5s ease-out forwards",
-        // ---------------------------------------
       },
 
+      // Özel Arka Planlar
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -43,9 +38,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    // require('@tailwindcss/typography'), 
-  ],
+  plugins: [],
 };
 
 export default config;

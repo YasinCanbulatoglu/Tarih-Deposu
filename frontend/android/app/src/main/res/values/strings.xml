@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tarih Deposu</string>
+    <string name="title_activity_main">Tarih Deposu</string>
+    <string name="package_name">com.tarihdeposu.app</string>
+    <string name="custom_url_scheme">com.tarihdeposu.app</string>
+</resources>

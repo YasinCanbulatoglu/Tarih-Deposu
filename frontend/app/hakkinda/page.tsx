@@ -1,8 +1,6 @@
 import Link from "next/link";
 
 export default function Hakkinda() {
-  // Buradaki tüm useState, useEffect ve toggleDarkMode fonksiyonlarını sildik.
-  // Çünkü tema kontrolü artık ana Layout dosyasından yapılıyor.
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0f172a] text-black dark:text-white transition-colors duration-500 font-sans scroll-smooth">

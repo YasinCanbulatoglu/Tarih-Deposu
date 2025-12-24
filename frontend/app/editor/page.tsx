@@ -25,9 +25,9 @@ export default function EditorDashboard() {
     const role = localStorage.getItem('admin_role');
 
     if (!token) {
-      router.push('/login'); // Giriş yoksa Login'e
+      router.push('/login');
     } else if (role === 'Yönetici') {
-      router.push('/admin'); // Yönetici yanlışlıkla buraya gelirse Admin paneline şutla
+      router.push('/admin'); 
     } else {
       setCurrentUser(user || '');
     }
@@ -40,7 +40,6 @@ export default function EditorDashboard() {
       const data = await res.json();
       
       // SADECE GİRİŞ YAPAN KULLANICININ YAZILARINI FİLTRELE
-      // Backend hepsini gönderiyor, biz burada ayıklıyoruz.
       const myUser = localStorage.getItem('admin_user');
       const myEvents = data.filter((e: Event) => e.created_by === myUser);
       

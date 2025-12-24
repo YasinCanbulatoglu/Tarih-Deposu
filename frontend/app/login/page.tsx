@@ -28,9 +28,8 @@ export default function LoginPage() {
       let data;
 
       try {
-        data = JSON.parse(textData); // JSON'a çevirmeyi dene
+        data = JSON.parse(textData); 
       } catch (jsonError) {
-        // jsonError değişkenini kullanmadığımız için konsola basabiliriz veya yoksayabiliriz
         console.error("JSON parse hatası:", jsonError); 
         console.error("Sunucudan gelen veri:", textData);
         throw new Error("Sunucu hatası: Beklenmedik yanıt alındı.");
@@ -55,8 +54,6 @@ export default function LoginPage() {
         setError(data.message || 'Kullanıcı adı veya şifre hatalı!');
       }
     } catch (err) {
-      // --- DÜZELTME BURADA ---
-      // 'any' yerine hatanın türünü kontrol ediyoruz
       console.error("Giriş Hatası:", err);
       
       const errorMessage = err instanceof Error ? err.message : 'Sunucuya bağlanılamadı. Backend çalışıyor mu?';

@@ -31,7 +31,6 @@ export default function Depo() {
   const [currentDate, setCurrentDate] = useState(new Date(1453, 4, 29));
   const [selectedDay, setSelectedDay] = useState<number | null>(null); // NULL = Filtre Yok
 
-  // 1. Sayfa Yüklendiğinde
   useEffect(() => {
     const initPage = () => {
       const isDark = document.documentElement.classList.contains("dark");
